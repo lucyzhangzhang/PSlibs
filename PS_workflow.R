@@ -2,33 +2,29 @@ library(DESeq2) #DEG analysis
 library(plyr) #data manipulation
 library(gplots) #graphing and visualization
 library(RColorBrewer) #graphing and visualization
-# library(stringr) #idk
 library(genefilter) #GFF maker
 library(dplyr) #graphing
 library(geneplotter) #graphing
 library(ggplot2) #graphing
 library(GenomicFeatures) #GFF functions makeTxdbFromGff
 library(reshape2) #graphing
-# library(ashr) #DESeq2
 library(apeglm) #better than ashr
 library(gridExtra) #used for Venn and graphs
-# library(cowplot)  #used for log2 expression graphs
+library(cowplot)  #used for log2 expression graphs
 library(venn) #used for venn
 library(VennDiagram) #used for venn
 library(grid) #used for venn and graphs
-# library(topGO)  #used for GO enrichment (results not informative)
-# library(Rgraphviz)  #used for GO enrichment
-# library(pheatmap) #used for visualization of DESeq outputs
+library(topGO)  #used for GO enrichment (results not informative)
+library(Rgraphviz)  #used for GO enrichment
+library(pheatmap) #used for visualization of DESeq outputs
+
 setwd("~/scratch/PS") #stuff in here
 
 #####################SETUP###################
-# condition <- c("F", "F", "F", "Sh", "Sh", rep(c("LPLS", "HPLS", "LPHS", "HPHS"), each = 3))
 condition <- c("F", "F", "F", rep(c("LPLS", "HPLS", "LPHS", "HPHS"), each = 3))
 sampleNO <- c("Y-F2003-1",
               "Y-F2003-2",
               "cracker",
-              # "SWW-1",
-              # "SWW-2",
               "ps10_S1",
               "ps11_S2",
               "ps12_S3",
@@ -62,7 +58,6 @@ keep <- rowSums(counts(DESeq2Table)) >= 10
 DESeq2Table <- DESeq2Table[keep,]
 
 DESeq2Table$condition <- relevel(DESeq2Table$condition, ref = "HPHS")
-# DESeq2Table$condition <- relevel(DESeq2Table$condition, ref = "Sh")
 
 dds <- DESeq(DESeq2Table, test = "Wald")
 res <- results(dds, pAdjustMethod = "BH")
@@ -80,34 +75,17 @@ png("PCA_samplesno.png", height = 700, width = 1000, res = 125)
 DESeq2::plotPCA(rldS, intgroup=c("condition"))
 dev.off()
 resultsNames(dds)
-#[1] "Intercept"              "condition_F_vs_HPHS"    "condition_FCC_vs_HPHS"  "condition_HPLS_vs_HPHS" "condition_LPHS_vs_HPHS" "condition_LPLS_vs_HPHS"
-
-# res1_2 <- lfcShrink(dds, coef = "condition_HPLS_vs_Sh", type = "ashr")
-# res1_3 <- lfcShrink(dds, coef = "condition_LPHS_vs_Sh", type = "ashr")
-# res1_4 <- lfcShrink(dds, coef = "condition_LPLS_vs_Sh", type = "ashr")
-# res1_I <- lfcShrink(dds, coef = "Intercept", type = "ashr")
-# res1_F <- lfcShrink(dds, coef = "condition_F_vs_Sh", type = "ashr")
-# res1_1 <- lfcShrink(dds, coef = "condition_HPHS_vs_Sh", type = "ashr")
-
-# res1_2 <- lfcShrink(dds, coef = "condition_HPLS_vs_HPHS", type = "ashr")
-# res1_3 <- lfcShrink(dds, coef = "condition_LPHS_vs_HPHS", type = "ashr")
-# res1_4 <- lfcShrink(dds, coef = "condition_LPLS_vs_HPHS", type = "ashr")
-# res1_I <- lfcShrink(dds, coef = "Intercept", type = "ashr")
-# res1_F <- lfcShrink(dds, coef = "condition_F_vs_HPHS", type = "ashr")
+#[1] "Intercept"              "condition_F_vs_HPHS"  "condition_HPLS_vs_HPHS" "condition_LPHS_vs_HPHS" "condition_LPLS_vs_HPHS"
 
 res1_2 <- lfcShrink(dds, coef = "condition_HPLS_vs_HPHS", type = "apeglm")
 res1_3 <- lfcShrink(dds, coef = "condition_LPHS_vs_HPHS", type = "apeglm")
 res1_4 <- lfcShrink(dds, coef = "condition_LPLS_vs_HPHS", type = "apeglm")
 res1_I <- lfcShrink(dds, coef = "Intercept", type = "apeglm")
 res1_F <- lfcShrink(dds, coef = "condition_F_vs_HPHS", type = "apeglm")
+
 #########################PLOTTING###############################################
-#r1_1 <- data.frame(cbind(row.names(res1_1), rep(1, nrow(res1_1)), res1_1$lfcSE, rep("HPHS", nrow(res1_1))), stringsAsFactors = FALSE)
 r1_I <- cbind.data.frame(row.names(res1_I), rep(0, nrow(res1_I)), res1_I$lfcSE, rep("HPHS", nrow(res1_I)))
 colnames(r1_I) <- c("gene", "lfc", "se", "sample")
-# r1_I <- cbind.data.frame(row.names(res1_I), rep(0, nrow(res1_1)), res1_1$lfcSE, rep("Sh", nrow(res1_I)))
-# colnames(r1_I) <- c("gene", "lfc", "se", "sample")
-# r1_1 <- cbind.data.frame(row.names(res1_1), res1_2$log2FoldChange, res1_2$lfcSE, rep("HPHS", nrow(res1_1)))
-# colnames(r1_1) <- c("gene", "lfc", "se", "sample")
 r1_2 <- cbind.data.frame(row.names(res1_2), res1_2$log2FoldChange, res1_2$lfcSE, rep("HPLS", nrow(res1_2)))
 colnames(r1_2) <- c("gene", "lfc", "se", "sample")
 r1_3 <- cbind.data.frame(row.names(res1_3), res1_3$log2FoldChange, res1_3$lfcSE, rep("LPHS", nrow(res1_3)))
@@ -116,10 +94,7 @@ r1_4 <- cbind.data.frame(row.names(res1_4), res1_4$log2FoldChange, res1_4$lfcSE,
 colnames(r1_4) <- c("gene", "lfc", "se", "sample")
 r1_F <- cbind.data.frame(row.names(res1_F), res1_F$log2FoldChange, res1_F$lfcSE, rep("F", nrow(res1_F)))
 colnames(r1_F) <- c("gene", "lfc", "se", "sample")
-# r1_FCC <- cbind.data.frame(row.names(res1_FCC), res1_FCC$log2FoldChange, res1_FCC$lfcSE, rep("FCC", nrow(res1_FCC)))
-# colnames(r1_FCC) <- c("gene", "lfc", "se", "sample")
 lists <- rbind(r1_I, r1_2, r1_3, r1_4, r1_F)
-# lists <- rbind(r1_1, r1_2, r1_3, r1_4, r1_F, r1_I)
 IPS <- lists[lists$gene %in% "Thhalv10015137m.g", ]
 
 ggplot(IPS, aes(x = sample, y = lfc)) +
@@ -188,11 +163,6 @@ downPS <-venn.diagram(list(HPLS=rownames(res1_2[which(res1_2[,"padj"] < 0.05 & r
                    LPLS=rownames(res1_4[which(res1_4[,"padj"] < 0.05 & res1_4[,"log2FoldChange"] < 0),]),
                    F=rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] < 0),])),
                    filename = NULL, col = "navyblue")
-# upF <-venn.diagram(list(F2003=rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] > 0),]),
-#                 FCC=rownames(res1_FCC[which(res1_FCC[,"padj"] < 0.05 & res1_FCC[,"log2FoldChange"] > 0),])), filename = NULL, col = "red")
-#
-# downF <- venn.diagram(list(F2003=rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] < 0),]),
-#                      FCC=rownames(res1_FCC[which(res1_FCC[,"padj"] < 0.05 & res1_FCC[,"log2FoldChange"] < 0),])), filename = NULL, col = "navyblue")
 
 
 
@@ -205,18 +175,6 @@ table
 
 write.table(table, file = "expCounts.tab", quote = F, row.names = F)
 
-# png("vennDiagram.png", height = 800, width = 800, res = 125)
-# grid.arrange(gTree(children = gList(textGrob(".", gp=gpar(col = "white", fontfamily = "serif")))),
-#   gTree(children = gList(textGrob("Upregulated", gp = gpar(fontfamily = "serif")))),
-#   gTree(children = gList(textGrob("Downregulated", gp = gpar(fontfamily = "serif")))),
-# gTree(children = gList(textGrob("PS_LIB", rot = 90, gp = gpar(fontfamily = "serif")))),
-# gTree(children = upPS),
-# gTree(children = downPS),
-# gTree(children = gList(textGrob("Field", rot = 90, gp = gpar(fontfamily = "serif")))),
-# gTree(children = upF),
-# gTree(children = downF),  ncol = 3, widths = c(0.1, 1, 1), heights = c(0.1, 1, 1))
-# dev.off()
-
 png("vennDiagram2.png", height = 800, width = 1200, res = 125)
 grid.arrange(gTree(children = gList(textGrob("Upregulated", gp = gpar(fontfamily = "serif")))),
   gTree(children = gList(textGrob("Downregulated", gp = gpar(fontfamily = "serif")))),
@@ -224,15 +182,11 @@ gTree(children = upPS),
 gTree(children = downPS),
 ncol = 2, widths = c(1, 1), heights = c(0.04, 1))
 dev.off()
-#4way venn
-
-way4 <-
 
 names <- rownames(res[which(res[,"padj"] < 0.05),])
 names
 thing <- sapply(names, graph, USE.NAMES = F, simplify = F)
 plotted <- plot_grid(plotlist = thing,  ncol = 4, align =  "v")
-#plotted <- plot_grid(plotted, legend, ncol = 2, rel_widths = c(1, 0.06))
 plotted
 plotted <- grid.arrange(arrangeGrob(plotted, left = textGrob("log2-fold Change", rot = 90, vjust = 1)))
 
@@ -378,9 +332,6 @@ data <- GOres1_4
 
   sig <- sigGenes(pos_genes)
 
-  # test <- new("classicCount", testStatistic = GOFisherTest, name = "test",
-  #             allMembers = pos)
-
   testFisher <- new("classicCount", testStatistic = GOFisherTest, name = "Fisher")
 
   resFtest <- getSigGroups(pos_genes, testFisher)
@@ -402,20 +353,15 @@ length(rownames(res1_4[which(res1_4[,"padj"] < 0.05 & res1_4[,"log2FoldChange"] 
 length(rownames(res1_4[which(res1_4[,"padj"] < 0.05 & res1_4[,"log2FoldChange"] < 0),]))
 length(rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] > 0),]))
 length(rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] < 0),]))
-# rownames(res1_FCC[which(res1_FCC[,"padj"] < 0.05 & res1_FCC[,"log2FoldChange"] > 0),])
-# rownames(res1_FCC[which(res1_FCC[,"padj"] < 0.05 & res1_FCC[,"log2FoldChange"] < 0),])
 
 liHPLS <- (res1_2[which(res1_2[,"padj"] < 0.05),])
 liLPHS <- (res1_3[which(res1_3[,"padj"] < 0.05),])
 liLPLS <- (res1_4[which(res1_4[,"padj"] < 0.05),])
 liF <- (res1_F[which(res1_F[,"padj"] < 0.05),])
-# liFCC <- (res1_FCC[which(res1_FCC[,"padj"] < 0.05),])
 liHPLS
 liLPHS
 liLPLS
 liF
-# liFCC
-# writeLines(liHPLS, con = "HPLSnames")
 
 #############################FPKM#######################
 
@@ -438,12 +384,6 @@ lengths
   lens <- lengths[row.names(lengths) %in% inter2,]
   mcols(dds)$basepairs <- lens
     fpkms2 <- fpkm(dds, robust = T)
-#GTF
-# inter <- intersect(myGTF$geneID, rownames(DESeq2Table))
-# head(inter)
-# smolGTF <- myGTF %>% filter( geneID %in% inter )
-
-#GFF
 
 lists <- list(HPLS=res1_2, LPHS=res1_3, LPLS=res1_4, Field=res1_F)
 
@@ -491,65 +431,11 @@ dev.off()
 library(phyloseq)
 library(ape)
 
-bigmat <- assay(rld)
-head(bigmat)
-
-#Extracting only positive -> Bray analysis of negative values are trivial
-# bigmat[bigmat < 0] <- 0
-# logcount <- bigmat
-# head(logcount)
-# keep2 <- rowSums(logcount) >= 10
-# logcount <- logcount[keep2,]
-# nrow(logcount)
-#
-# subsample <- logcount[sample(nrow(logcount), 2000),]
-# head(as.matrix(subsample))
-# bray1 <- vegdist(as.matrix(subsample), "bray")
-#
-#
-# head(bray1)
-# biplot(ape::pcoa(bray1))
-# # countdist <- phyloseq::distance(logcount, methods = "bray") doesn't work
-# # countdist <- vegdist(logcount, "bray") don't do this
-#
-# bigmat2 <- assay(vst(dds))
-# head(bigmat2)
-# # matdist <- dist(bigmat, method = "minkowski") <- never do this
-# matdist <- vegdist(bigmat, "bray")
-# matdist2 <- vegdist(bigmat2, "bray")
-# # poca(matdist) <- never do this either
-# max(matdist)
-# max(matdist2)
-# min(matdist2)
-# hist(matdist2)
-#
-raw <- counts(dds)
-head(raw)
-
-cas <- CA(raw, graph = T)
-
 vst <- varianceStabilizingTransformation(dds)
 vst <- assay(vst)
-###############################################
 
-#try a subset of data (2000 genes that don't have 0 or negative expression, randomly sampled...)
-submat <- otu_table(subsample, taxa_are_rows = T)
-taxmat <- matrix(rep(condition, each = nrow(submat)), nrow = nrow(submat))
-colnames(taxmat) <- colnames(submat)
-rownames(taxmat) <- rownames(submat)
-taxmat <- tax_table(taxmat)
-physeq <- phyloseq(submat)
-sampledat <- sample_data(data.frame(row.names=sample_names(physeq), condition = condition, stringsAsFactors = F,
-                                    sampleID = sampleNO))
-physeq <- merge_phyloseq(physeq, sampledat)
-# plot_bar(physeq)
-physeq
-ord <- ordinate(physeq, method = "PCoA", distance = "bray")
-plot_ordination(physeq, ord, type = "samples", color = "condition")
-
-
-#########big###
 bigOtu <- otu_table(vst, taxa_are_rows = T)
+
 sampledat <- sample_data(data.frame(row.names=sample_names(bigOtu), condition = condition, stringsAsFactors = F,
                                     sampleID = sampleNO))
 physeq <- phyloseq(bigOtu, sampledat)
@@ -559,28 +445,3 @@ ord <- ordinate(physeq, method = "PCoA")
 pcoa <- plot_ordination(physeq, ord, type = "samples", color = "condition")
 pcoa
 ggsave("vst-pcoa.png", pcoa, height = 4, width = 6, dpi = 125)
-
-
-###Subsetteds dds
-
-vst <- varianceStabilizingTransformation(dds)
-subsetvst <- vst[, vst$condition %in% c("HPLS", "LPHS", "LPLS", "HPHS")]
-subsetvst <- assay(subsetvst)
-smallOtu <- otu_table(subsetvst, taxa_are_rows = T)
-sampleSmall <- c("ps10_S1","ps11_S2", "ps12_S3",  "ps37_S4",   "ps38_S5",  "ps40_S6",
-              "ps41_S7",   "ps44_S8",  "ps46_S9",  "ps48_S10","ps49_S11", "ps50_S12")
-
-sampleDatS <- sample_data(data.frame(row.names=sample_names(smallOtu), condition = rep(c("LPLS", "HPLS", "LPHS", "HPHS"), each = 3),
-                                     sampleID =sampleSmall, stringsAsFactors = F))
-phySmall <- phyloseq(smallOtu, sampleDatS)
-ordS <- ordinate(phySmall, method = "PCoA")
-pocaS <- plot_ordination(phySmall, ordS, type = "samples", color = "condition")
-pocaS
-ggsave("vst-pcoaS.png", pocaS, height = 4, width = 6, dpi = 125)
-
-
-#########NMDS############
-
-NMDS <- ordinate(physeq, method = "NMDS", "bray") #zero stress, results trivial
-NMDS_p <- plot_ordination(physeq, NMDS, type = "samples", color = "condition")
-NMDS_p

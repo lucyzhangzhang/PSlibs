@@ -9,11 +9,8 @@ library(ggplot2) #graphing
 library(GenomicFeatures) #GFF functions makeTxdbFromGff
 library(reshape2) #graphing
 library(apeglm) #better than ashr
-library(gridExtra) #used for Venn and graphs
-library(cowplot)  #used for log2 expression graphs
 library(venn) #used for venn
 library(VennDiagram) #used for venn
-library(grid) #used for venn and graphs
 library(topGO)  #used for GO enrichment (results not informative)
 library(Rgraphviz)  #used for GO enrichment
 library(pheatmap) #used for visualization of DESeq outputs
@@ -25,17 +22,17 @@ condition <- c("F", "F", "F", rep(c("LPLS", "HPLS", "LPHS", "HPHS"), each = 3))
 sampleNO <- c("Y-F2003-1",
               "Y-F2003-2",
               "cracker",
-              "ps10_S1",
-              "ps11_S2",
               "ps12_S3",
-              "ps37_S4",
-              "ps38_S5",
-              "ps40_S6",
-              "ps41_S7",
-              "ps44_S8",
-              "ps46_S9",
               "ps48_S10",
               "ps49_S11",
+              "ps11_S2",
+              "ps40_S6",
+              "ps46_S9",
+              "ps10_S1",
+              "ps38_S5",
+              "ps44_S8",
+              "ps37_S4",
+              "ps41_S7",
               "ps50_S12")
 
 metadata <- data.frame(sampleNO = sampleNO,
@@ -80,12 +77,12 @@ resultsNames(dds)
 res1_2 <- lfcShrink(dds, coef = "condition_HPLS_vs_HPHS", type = "apeglm")
 res1_3 <- lfcShrink(dds, coef = "condition_LPHS_vs_HPHS", type = "apeglm")
 res1_4 <- lfcShrink(dds, coef = "condition_LPLS_vs_HPHS", type = "apeglm")
-res1_I <- lfcShrink(dds, coef = "Intercept", type = "apeglm")
+# res1_I <- lfcShrink(dds, coef = "Intercept", type = "apeglm")
 res1_F <- lfcShrink(dds, coef = "condition_F_vs_HPHS", type = "apeglm")
 
 #########################PLOTTING###############################################
-r1_I <- cbind.data.frame(row.names(res1_I), rep(0, nrow(res1_I)), res1_I$lfcSE, rep("HPHS", nrow(res1_I)))
-colnames(r1_I) <- c("gene", "lfc", "se", "sample")
+# r1_I <- cbind.data.frame(row.names(res1_I), rep(0, nrow(res1_I)), res1_I$lfcSE, rep("HPHS", nrow(res1_I)))
+# colnames(r1_I) <- c("gene", "lfc", "se", "sample")
 r1_2 <- cbind.data.frame(row.names(res1_2), res1_2$log2FoldChange, res1_2$lfcSE, rep("HPLS", nrow(res1_2)))
 colnames(r1_2) <- c("gene", "lfc", "se", "sample")
 r1_3 <- cbind.data.frame(row.names(res1_3), res1_3$log2FoldChange, res1_3$lfcSE, rep("LPHS", nrow(res1_3)))
@@ -94,7 +91,7 @@ r1_4 <- cbind.data.frame(row.names(res1_4), res1_4$log2FoldChange, res1_4$lfcSE,
 colnames(r1_4) <- c("gene", "lfc", "se", "sample")
 r1_F <- cbind.data.frame(row.names(res1_F), res1_F$log2FoldChange, res1_F$lfcSE, rep("F", nrow(res1_F)))
 colnames(r1_F) <- c("gene", "lfc", "se", "sample")
-lists <- rbind(r1_I, r1_2, r1_3, r1_4, r1_F)
+lists <- rbind(r1_2, r1_3, r1_4, r1_F)
 IPS <- lists[lists$gene %in% "Thhalv10015137m.g", ]
 
 ggplot(IPS, aes(x = sample, y = lfc)) +
@@ -110,92 +107,13 @@ ggplot(IPS, aes(x = sample, y = lfc)) +
           legend.title = element_blank(),
           axis.title.y = element_blank())
 
- graph <- function(ID) {
-  dat <- lists[lists$gene %in% ID, ]
-  ggplot(dat, aes(x = sample, y = lfc)) +
-    geom_point() +
-    xlab(paste0(as.character(dat$gene[1]), " expression")) +
-    geom_hline(yintercept = 0, linetype = "dotted") +
-    geom_errorbar(aes(x = sample, ymax = lfc + se, ymin = lfc - se), width = 0.1) +
-    ylim(-5,5) +
-    theme(text = element_text(size = 10),
-          axis.text = element_text(size = 10),
-          legend.position = "none",
-          legend.title = element_blank(),
-          axis.title.y = element_blank())
-}
-
-
-################################TREES###################################
-
-png("FourVennvsS.png", width = 1000, height = 1000, res = 200)
-venn(list(HPLS=rownames(res1_2[which(res1_2[,"padj"] < 0.05),]),
-LPHS=rownames(res1_3[which(res1_3[,"padj"] < 0.05),]),
-LPLS=rownames(res1_4[which(res1_4[,"padj"] < 0.05),]),
-F=rownames(res1_F[which(res1_F[,"padj"] < 0.05),])), zcolor = "style")
-dev.off()
-
-
-png("smolvenn.png", width = 800, height = 800, res = 250)
-venn(list(HPLS=rownames(res1_2[which(res1_2[,"padj"] < 0.05),]),
-                       LPHS=rownames(res1_3[which(res1_3[,"padj"] < 0.05),]),
-                       LPLS=rownames(res1_4[which(res1_4[,"padj"] < 0.05),])), zcolor = "style")
-dev.off()
-
-
-png("fieldvenn.png", width = 800, height = 800, res = 250)
-venn(list(F2003=rownames(res1_F[which(res1_F[,"padj"] < 0.05),]),
-FCC=rownames(res1_FCC[which(res1_FCC[,"padj"] < 0.05),])), zcolor = "style", family = "mono")
-dev.off()
-
-print(fieldvenn)
-print(venn)
-print(smallvenn)
-
-
-upPS <- venn.diagram(list(HPLS=rownames(res1_2[which(res1_2[,"padj"] < 0.05 & res1_2[,"log2FoldChange"] > 0),]),
-                  LPHS=rownames(res1_3[which(res1_3[,"padj"] < 0.05 & res1_3[,"log2FoldChange"] > 0),]),
-                  LPLS=rownames(res1_4[which(res1_4[,"padj"] < 0.05 & res1_4[,"log2FoldChange"] > 0),]),
-                  F=rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] > 0),])),
-                  filename = NULL, col = "red")
-downPS <-venn.diagram(list(HPLS=rownames(res1_2[which(res1_2[,"padj"] < 0.05 & res1_2[,"log2FoldChange"] < 0),]),
-                   LPHS=rownames(res1_3[which(res1_3[,"padj"] < 0.05 & res1_3[,"log2FoldChange"] < 0),]),
-                   LPLS=rownames(res1_4[which(res1_4[,"padj"] < 0.05 & res1_4[,"log2FoldChange"] < 0),]),
-                   F=rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] < 0),])),
-                   filename = NULL, col = "navyblue")
-
-
-
-table <- rbind(HPLS=c(52,23), LPHS=c(1,0), LPLS=c(10, 9), F2003=c(3933,3477), FCC=c(2463,3289))
-colnames(table) <- c("Upreg", "Downreg")
-table <- as_tibble(table)
-table <- mutate(table, Total=(Upreg + Downreg), Sample =c( "HPLS", "LPHS","LPLS", "F", "FCC") )
-
-table
-
-write.table(table, file = "expCounts.tab", quote = F, row.names = F)
-
-png("vennDiagram2.png", height = 800, width = 1200, res = 125)
-grid.arrange(gTree(children = gList(textGrob("Upregulated", gp = gpar(fontfamily = "serif")))),
-  gTree(children = gList(textGrob("Downregulated", gp = gpar(fontfamily = "serif")))),
-gTree(children = upPS),
-gTree(children = downPS),
-ncol = 2, widths = c(1, 1), heights = c(0.04, 1))
-dev.off()
-
-names <- rownames(res[which(res[,"padj"] < 0.05),])
-names
-thing <- sapply(names, graph, USE.NAMES = F, simplify = F)
-plotted <- plot_grid(plotlist = thing,  ncol = 4, align =  "v")
-plotted
-plotted <- grid.arrange(arrangeGrob(plotted, left = textGrob("log2-fold Change", rot = 90, vjust = 1)))
-
-ggsave("Thing.png", plotted, height = 9, width = 12, dpi = 250)
-
 genes <- read.table("Genes")
 genes2 <- genes[genes[,2] %in% lists$gene, ]
 oldNames <- genes2[,2]
 
+library(grid) #used for venn and graphs
+library(gridExtra) #used for Venn and graphs
+library(cowplot)  #used for log2 expression graphs
 #very important function which plots everything in a list of gene names
 graph <- function(gene) {
   #gets the data from big "melted" list
@@ -221,6 +139,44 @@ plotted
 plotted <- grid.arrange(arrangeGrob(plotted, left = textGrob("log2-fold Change", rot = 90, vjust = 1)))
 ggsave("BeforeDotComp.png", plotted, height = 12, width = 11, dpi = 300)
 
+################################TREES###################################
+
+png("FourVennvsS.png", width = 1000, height = 1000, res = 200)
+venn(list(HPLS=rownames(res1_2[which(res1_2[,"padj"] < 0.05),]),
+LPHS=rownames(res1_3[which(res1_3[,"padj"] < 0.05),]),
+LPLS=rownames(res1_4[which(res1_4[,"padj"] < 0.05),]),
+F=rownames(res1_F[which(res1_F[,"padj"] < 0.05),])), zcolor = "style")
+dev.off()
+
+
+png("smolvenn.png", width = 800, height = 800, res = 250)
+venn(list(HPLS=rownames(res1_2[which(res1_2[,"padj"] < 0.05),]),
+                       LPHS=rownames(res1_3[which(res1_3[,"padj"] < 0.05),]),
+                       LPLS=rownames(res1_4[which(res1_4[,"padj"] < 0.05),])), zcolor = "style")
+dev.off()
+
+
+upPS <- venn.diagram(list(HPLS=rownames(res1_2[which(res1_2[,"padj"] < 0.05 & res1_2[,"log2FoldChange"] > 0),]),
+                  LPHS=rownames(res1_3[which(res1_3[,"padj"] < 0.05 & res1_3[,"log2FoldChange"] > 0),]),
+                  LPLS=rownames(res1_4[which(res1_4[,"padj"] < 0.05 & res1_4[,"log2FoldChange"] > 0),]),
+                  F=rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] > 0),])),
+                  filename = NULL, col = "red")
+downPS <-venn.diagram(list(HPLS=rownames(res1_2[which(res1_2[,"padj"] < 0.05 & res1_2[,"log2FoldChange"] < 0),]),
+                   LPHS=rownames(res1_3[which(res1_3[,"padj"] < 0.05 & res1_3[,"log2FoldChange"] < 0),]),
+                   LPLS=rownames(res1_4[which(res1_4[,"padj"] < 0.05 & res1_4[,"log2FoldChange"] < 0),]),
+                   F=rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] < 0),])),
+                   filename = NULL, col = "navyblue")
+
+png("vennDiagram2.png", height = 800, width = 1200, res = 125)
+grid.arrange(gTree(children = gList(textGrob("Upregulated", gp = gpar(fontfamily = "serif")))),
+  gTree(children = gList(textGrob("Downregulated", gp = gpar(fontfamily = "serif")))),
+gTree(children = upPS),
+gTree(children = downPS),
+ncol = 2, widths = c(1, 1), heights = c(0.04, 1))
+dev.off()
+
+
+
 #############################GO Enrichment##################################
 
 #read in GO relations
@@ -236,11 +192,9 @@ GOres1_4 <- as.data.frame(res1_4@listData)
 rownames(GOres1_4) <- res1_4@rownames
 GOres1_F <- as.data.frame(res1_F@listData)
 rownames(GOres1_F) <- res1_F@rownames
-GOres1_FCC <- as.data.frame(res1_FCC@listData)
-rownames(GOres1_FCC) <- res1_FCC@rownames
 
-dat <- list(HPLS=GOres1_2, LPHS=GOres1_3, LPLS=GOres1_4, F2003=GOres1_F, FCC=GOres1_FCC)
-names <- c("HPLS", "LPHS", "LPLS", "F2003", "FCC")
+dat <- list(HPLS=GOres1_2, LPHS=GOres1_3, LPLS=GOres1_4, F=GOres1_F)
+names <- c("HPLS", "LPHS", "LPLS", "F")
 
 i=1
 
@@ -278,9 +232,9 @@ topGoPipe <- for (data in dat) {
 
   posTable <- GenTable(pos_genes, Fisher = resFtest, topNodes = 200)
   write.table(posTable[,c(1,ncol(posTable))], file = paste0("smol", name, "_POS.tab"), sep = "\t", quote = F, row.names = F)
-  # png(paste0(name, "GOPos.png"), height = 1500, width = 1500, res = 200)
-  # showSigOfNodes(pos_genes, score(resFtest), firstSigNodes = 10, useInfo = "all")
-  # dev.off()
+  png(paste0(name, "GOPos.png"), height = 1500, width = 1500, res = 200)
+  showSigOfNodes(pos_genes, score(resFtest), firstSigNodes = 10, useInfo = "all")
+  dev.off()
 
   #Down regulated genes
   Fdown <- data[data$log2FoldChange < 0,]$padj
@@ -307,9 +261,9 @@ topGoPipe <- for (data in dat) {
   negTable <- GenTable(neg_genes, Fisher = resFtestN, topNodes = 200)
   write.table(negTable[,c(1,ncol(negTable))], file = paste0("smol", name, "_NEG.tab"), sep = "\t", quote = F, row.names = F)
 
-  # png(paste0(name, "GONeg.png"), height = 1500, width = 1500, res = 200)
-  # showSigOfNodes(neg_genes, score(resFtestN), firstSigNodes = 10, useInfo = "all")
-  # dev.off()
+  png(paste0(name, "GONeg.png"), height = 1500, width = 1500, res = 200)
+  showSigOfNodes(neg_genes, score(resFtestN), firstSigNodes = 10, useInfo = "all")
+  dev.off()
   i <- i + 1
 }
 
@@ -345,14 +299,14 @@ data <- GOres1_4
 ###########################GET LIST OF GENE NAMES #################
 
 
-length(rownames(res1_2[which(res1_2[,"padj"] < 0.05 & res1_2[,"log2FoldChange"] > 0),]))
-length(rownames(res1_2[which(res1_2[,"padj"] < 0.05 & res1_2[,"log2FoldChange"] < 0),]))
-length(rownames(res1_3[which(res1_3[,"padj"] < 0.05 & res1_3[,"log2FoldChange"] > 0),]))
-length(rownames(res1_3[which(res1_3[,"padj"] < 0.05 & res1_3[,"log2FoldChange"] < 0),]))
-length(rownames(res1_4[which(res1_4[,"padj"] < 0.05 & res1_4[,"log2FoldChange"] > 0),]))
-length(rownames(res1_4[which(res1_4[,"padj"] < 0.05 & res1_4[,"log2FoldChange"] < 0),]))
-length(rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] > 0),]))
-length(rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] < 0),]))
+rownames(res1_2[which(res1_2[,"padj"] < 0.05 & res1_2[,"log2FoldChange"] > 0),])
+rownames(res1_2[which(res1_2[,"padj"] < 0.05 & res1_2[,"log2FoldChange"] < 0),])
+rownames(res1_3[which(res1_3[,"padj"] < 0.05 & res1_3[,"log2FoldChange"] > 0),])
+rownames(res1_3[which(res1_3[,"padj"] < 0.05 & res1_3[,"log2FoldChange"] < 0),])
+rownames(res1_4[which(res1_4[,"padj"] < 0.05 & res1_4[,"log2FoldChange"] > 0),])
+rownames(res1_4[which(res1_4[,"padj"] < 0.05 & res1_4[,"log2FoldChange"] < 0),])
+rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] > 0),])
+rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] < 0),])
 
 liHPLS <- (res1_2[which(res1_2[,"padj"] < 0.05),])
 liLPHS <- (res1_3[which(res1_3[,"padj"] < 0.05),])
@@ -402,14 +356,15 @@ fpkmdf <-  getFPKMs(lists[[i]])
 ###############PHEATMAP#############
 ntd <- normTransform(dds)
 select <- order(rowMeans(counts(dds,normalized=TRUE)),
-                decreasing=TRUE)[1:6]
+                decreasing=TRUE)
 df <- as.data.frame(colData(dds)[,c("condition")])
 #must have this or else have error msg: Error in check.length("fill") :
 #                                         'gpar' element 'fill' must not be length 0
 rownames(df) <- colnames(assay(ntd)[select,])
+png("heatmap2.png", height = 1200, width = 1600, res = 200)
 pheatmap::pheatmap(assay(ntd)[select,], cluster_rows=FALSE, show_rownames=FALSE,
          cluster_cols=FALSE, annotation_col=df)
-
+dev.off()
 
 
 distsRL <- dist(t(assay(rld))) # Calculate distances using transformed (and normalized) counts
@@ -430,7 +385,11 @@ dev.off()
 ###################PHYLOSEQ####################
 library(phyloseq)
 library(ape)
-
+unloadNamespace("Rgraphviz")
+unloadNamespace("VennDiagram")
+unloadNamespace("gridExtra")
+unloadNamespace("grid")
+unloadNamespace("cowplot")
 vst <- varianceStabilizingTransformation(dds)
 vst <- assay(vst)
 
@@ -445,3 +404,20 @@ ord <- ordinate(physeq, method = "PCoA")
 pcoa <- plot_ordination(physeq, ord, type = "samples", color = "condition")
 pcoa
 ggsave("vst-pcoa.png", pcoa, height = 4, width = 6, dpi = 125)
+
+###Subsetteds dds of cabinet plants only
+
+vst <- varianceStabilizingTransformation(dds)
+subsetvst <- vst[, vst$condition %in% c("HPLS", "LPHS", "LPLS", "HPHS")]
+subsetvst <- assay(subsetvst)
+smallOtu <- otu_table(subsetvst, taxa_are_rows = T)
+sampleSmall <- c("ps10_S1","ps11_S2", "ps12_S3",  "ps37_S4",   "ps38_S5",  "ps40_S6",
+              "ps41_S7",   "ps44_S8",  "ps46_S9",  "ps48_S10","ps49_S11", "ps50_S12")
+
+sampleDatS <- sample_data(data.frame(row.names=sample_names(smallOtu), condition = rep(c("LPLS", "HPLS", "LPHS", "HPHS"), each = 3),
+                                     sampleID =sampleSmall, stringsAsFactors = F))
+phySmall <- phyloseq(smallOtu, sampleDatS)
+ordS <- ordinate(phySmall, method = "PCoA")
+pocaS <- plot_ordination(phySmall, ordS, type = "samples", color = "condition")
+pocaS
+ggsave("vst-pcoaS.png", pocaS, height = 4, width = 6, dpi = 125)

@@ -411,8 +411,18 @@ vst <- varianceStabilizingTransformation(dds)
 subsetvst <- vst[, vst$condition %in% c("HPLS", "LPHS", "LPLS", "HPHS")]
 subsetvst <- assay(subsetvst)
 smallOtu <- otu_table(subsetvst, taxa_are_rows = T)
-sampleSmall <- c("ps10_S1","ps11_S2", "ps12_S3",  "ps37_S4",   "ps38_S5",  "ps40_S6",
-              "ps41_S7",   "ps44_S8",  "ps46_S9",  "ps48_S10","ps49_S11", "ps50_S12")
+sampleSmall <- c("ps12_S3",
+                 "ps48_S10",
+                 "ps49_S11",
+                 "ps11_S2",
+                 "ps40_S6",
+                 "ps46_S9",
+                 "ps10_S1",
+                 "ps38_S5",
+                 "ps44_S8",
+                 "ps37_S4",
+                 "ps41_S7",
+                 "ps50_S12")
 
 sampleDatS <- sample_data(data.frame(row.names=sample_names(smallOtu), condition = rep(c("LPLS", "HPLS", "LPHS", "HPHS"), each = 3),
                                      sampleID =sampleSmall, stringsAsFactors = F))

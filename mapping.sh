@@ -17,12 +17,12 @@ if [ -e tmp ]; then
     rm tmp
 fi
 
-#ls -v $sampleDir/*.gz | sed -n '1~4p' > R1
-#ls -v $sampleDir/*.gz | sed -n '2~4p' > R2
-#ls -v $sampleDir/*.gz | sed -n '3~4p' > R3
-#ls -v $sampleDir/*.gz | sed -n '4~4p' > R4
+ls -v $sampleDir/*.gz | sed -n '1~4p' > R1
+ls -v $sampleDir/*.gz | sed -n '2~4p' > R2
+ls -v $sampleDir/*.gz | sed -n '3~4p' > R3
+ls -v $sampleDir/*.gz | sed -n '4~4p' > R4
 
-#paste R1 R2 R3 R4 > tmp
+paste R1 R2 R3 R4 > tmp
 
 
 # 0. Trim quality
@@ -30,7 +30,7 @@ fi
 
 # 1. 1pass
 #generate reference genome
-#STAR --runMode genomeGenerate --genomeDir $genomeDir --sjdbGTFfile $genomeDir/*.gtf --genomeFastaFiles $genomeDir/*.fa --runThreadN 5
+STAR --runMode genomeGenerate --genomeDir $genomeDir --sjdbGTFfile $genomeDir/*.gtf --genomeFastaFiles $genomeDir/*.fa --runThreadN 5
     
 for file in `ls -1 $1/*.gz`; do
     #get names of files for naming!

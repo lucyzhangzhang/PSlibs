@@ -46,3 +46,7 @@ DESeq2.R
 
 # test files
 *test*
+
+# weird shit
+.directory
+*.sh

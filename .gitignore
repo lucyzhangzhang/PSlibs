@@ -43,11 +43,10 @@ DESeq2.R
 # R data
 *.RData
 *.Rhistory
+yuk_shan_pca.R
 
 # test files
 *test*
 
 # weird shit
 .directory
-*.sh
-!scrips/*

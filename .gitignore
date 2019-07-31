@@ -50,3 +50,4 @@ DESeq2.R
 # weird shit
 .directory
 *.sh
+!scrips/*

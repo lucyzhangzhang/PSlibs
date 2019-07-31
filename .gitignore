@@ -19,6 +19,7 @@ unMerge_count
 PSField.R
 DESeq2.R
 !QoRTs/*/DESeq.txt
+
 # output pictures
 *.png
 
@@ -50,3 +51,6 @@ yuk_shan_pca.R
 
 # weird shit
 .directory
+
+# large files
+*.gz

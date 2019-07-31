@@ -18,7 +18,7 @@ unMerge
 unMerge_count
 PSField.R
 DESeq2.R
-
+!QoRTs/*/DESeq.txt
 # output pictures
 *.png
 

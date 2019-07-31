@@ -114,6 +114,7 @@ print(merge_plot)
 
 
 ######MAPQ######
+library(dplyr)
 
 unMerge <- read.table("unMerge_count")
 
@@ -131,6 +132,15 @@ UnMerged <- cbind(UnMerged, unmergeTot)
 UnMerged <- cbind(UnMerged, UnMerged$Unmerged/UnMerged$unmergeTot)
 colnames(UnMerged)[ncol(UnMerged)] <- "Ratio"
 UnMerged
+uniq <- UnMerged %>% filter(UnMerged$Score == 255)
+trim.sum <- tapply(trimCounts$Trimmed, trimCounts$Sample, FUN = sum)
+uniq <- cbind(uniq, trim.sum)
+uniq$TrimRation <- uniq$unmergeTot/uniq$trim.sum*100
+uniq$unmergeTot <- as.double(uniq$unmergeTot)
+formatted <- data.frame(format(uniq[, 4], digits = 3, scientific = T), format(uniq[,  7], digits = 3, scientific = F), stringsAsFactors = F)
+rownames(formatted) <- rownames(uniq)
+colnames(formatted) <- c("Counts", "mapRatio")
+write.table(formatted, file = "mapRatio.tab", quote = F, row.names = , col.names = F, sep = " & ", eol = " \\\\\n")
 
 M_erged <- counts[,c(1, 3, 4)]
 mergeTot <- rep(aggregate(M_erged$Merged, by = list(Category = M_erged$Sample), FUN = sum)[,2], each = 4)

@@ -1,5 +1,3 @@
-BeforeDot.png
-BeforeDotComp.png
 Drought.go
 F2003_NEG
 F2003_POS
@@ -13,25 +11,38 @@ LPHS_POS
 LPLS_NEG
 LPLS_POS
 Merge
-Merged.png
 Merged_count
-PCA_samplesF.png
-PCA_samplesFcomp.png
-QoRTs
-Thing.png
-TrimAve.png
-TrimDodge.png
-TrimRatio.png
-TrimStack.png
-UnMerged.png
 counts
 counts2
-fiveVenn.png
-fourVenn.png
-mergeBox.png
-smolvenn.png
-test.R
 unMerge
 unMerge_count
 PSField.R
 DESeq2.R
+
+# output pictures
+*.png
+
+# vim files
+*.swp
+*.swo
+
+# output data files
+*.xlsx
+*.tab
+*.out
+*.csv
+
+# Except this file which is required for PCA
+# Really you don't need this just have a
+# data frame once you've adjusted the transcript lengths
+!FPKMS_LengthAdjusted2.tab
+
+# log files
+*.log
+
+# R data
+*.RData
+*.Rhistory
+
+# test files
+*test*

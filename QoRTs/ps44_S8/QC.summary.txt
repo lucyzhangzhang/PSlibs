@@ -1,0 +1,113 @@
+FIELD	COUNT	DESC
+Stranded_Rule_Code	1	Code for the strandedness rule used. 0 if data is unstranded, 1 if data is fr_firstStrand, 2 if data is fr_secondStrand.
+READ_PAIR_OK	11843493	Number of reads or read-pairs that pass initial filters and are processed by QoRTs.
+TOTAL_READ_PAIRS	11868113	Total number of reads or read-pairs found in the input file.
+DROPPED_NOT_PROPER_PAIR	0	Number of reads or read-pairs dropped because the 'not proper pair' SAM flag is raised.
+DROPPED_READ_FAILS_VENDOR_QC	0	Number of reads or read-pairs that have the 'failed vendor QC' SAM flag raised.
+DROPPED_MARKED_NOT_VALID	0	Number of reads or read-pairs dropped because marked 'not valid'
+DROPPED_CHROMS_MISMATCH	0	Number of read-pairs dropped because the paired reads align to different chromosomes
+DROPPED_PAIR_STRANDS_MISMATCH	0	Number of read-pairs dropped because the paired reads align to inconsistent strands
+DROPPED_IGNORED_CHROMOSOME	0	Number of reads or read-pairs dropped because they align to chromosomes marked for ignoring
+DROPPED_NOT_UNIQUE_ALIGNMENT	24620	Number of reads or read-pairs dropped because they are not uniquely aligned to single genomic locus
+DROPPED_NO_ALN_BLOCKS	0	Number of reads or read-pairs dropped because they do not have any alignment blocks (despite being marked as aligned)
+DROPPED_NOT_MARKED_RG	-1	Number of reads or read-pairs dropped because they are not in the correct read group (or -1 if read-group filtering is not on)
+KEPT_NOT_UNIQUE_ALIGNMENT	0	Number of reads or read-pairs kept despite not being uniquely aligned.
+minObservedReadLength	36	The base-pair length of the smallest read
+maxObservedReadLength	151	The base-pair length of the largest read
+maxLegalPhredScore	41	The largest observed PHRED score.
+IS_SINGLE_END	0	0 if data is paired-ended, 1 if data is single-ended
+PREALIGNMENT_READ_CT	-1	The number of reads found pre-alignment. Can be set using --seqReadCt or --rawfastq. -1 if unknown.
+BENCHMARK_MinutesOnSamIteration	43.43	The number of minutes spent on the SAM iteration step.
+BENCHMARK_MinutesPerMillionReads	3.66	The number of minutes per million reads spent on the SAM iteration step
+BENCHMARK_MinutesPerMillionGoodReads	3.67	The number of minutes per million reads that passed the initial filtering step.
+ReadPairs_AmbigGene	222278	Number of reads or read-pairs that map to a genomic area that includes regions covered by more than one gene.
+ReadPairs_UniqueGene	11293998	Number of reads or read-pairs that map to a genomic area covered by exactly one gene
+ReadPairs_UniqueGene_CDS	0	Number of reads or read-pairs that map to a genomic area covered by exactly one gene, and intersect at least partially with the coding region of that gene.
+ReadPairs_UniqueGene_UTR	11293998	Number of reads or read-pairs that map to a genomic area covered by exactly one gene, but that only cover the UTR (non-coding) regions.
+ReadPairs_NoGene	327217	Number of reads or read-pairs that are not assigned to any gene.
+ReadPairs_NoGene_Intron	41494	Number of reads or read-pairs that are not assigned to any gene, and that occur within an intronic region of one or more genes.
+ReadPairs_NoGene_OneKbFromGene	183123	Number of reads or read-pairs that are not assigned to any gene, and that are within 1kb from one or more genes.
+ReadPairs_NoGene_TenKbFromGene	87860	Number of reads or read-pairs that are not assigned to any gene, and that are within 10kb from one or more genes.
+ReadPairs_NoGene_MiddleOfNowhere	14740	Number of reads or read-pairs that are not assigned to any gene, and that are more than 10kb from the nearest gene
+Genes_Total	28726	Number of known genes
+Genes_WithZeroCounts	7686	Number of genes with zero observed reads
+Genes_WithNonzeroCounts	21040	Number of genes with 1 or more observed reads
+InsertSizeCalc_Kept	10944577	Number of read-pairs that satisfied the filters needed to calculate insert size.
+InsertSizeCalc_lt_readLen	163902	Number of read pairs with insert size less than the read length
+InsertSizeCalc_eq_readLen	68016	Number of read pairs with insert size equal to the read length
+InsertSizeCalc_readLen_to_2xreadLen	7895901	Number of read pairs with insert size greater than the read length but less than twice the read length
+InsertSizeCalc_ge_2xreadLen	2816758	Number of read pairs greater than twice the read length
+InsertSizeCalc_Drop_TOTAL	898916	Number of read-pairs for which insert size could not be successfully calculated
+InsertSizeCalc_Drop_REASON1	0	Dropped because the forward read appears after the reverse read
+InsertSizeCalc_Drop_REASON2	826398	Dropped because the paired reads have different splicing over the overlapped region
+InsertSizeCalc_Drop_REASON3	72518	Dropped because too many adaptor bases are aligned to the reference genome (indicating bad alignment)
+AVG_GC_R1	0.4603083197355942	Average GC fraction for read 1
+AVG_GC_R2	0.46608282420153085	Average GC fraction for read 2
+AVG_GC	0.4631955719685626	Average GC fraction across all reads
+AggregateGenes	28614	Number of aggregate genes
+AggregateGenes_NoReads	7583	Number of aggregate genes with 0 observed reads
+AggregateGenes_WithReads	21031	Number of aggregate genes with 1 or more observed reads
+SpliceLoci	169816	Number of splice loci observed
+SpliceLoci_Known	121501	Number of known splice loci
+SpliceLoci_Known_NoReads	28398	Number of known splice loci with 0 observed reads
+SpliceLoci_Known_FewReads	9765	Number of known splice loci with 1-3 observed reads
+SpliceLoci_Known_ManyReads	83338	Number of known splice loci with 4+ observed reads
+SpliceLoci_Novel	48315	Number of novel splice loci observed
+SpliceLoci_Novel_FewReads	39634	Number of novel splice loci observed with 1-3 observed reads
+SpliceLoci_Novel_ManyReads	8681	Number of novel splice loci observed with 4+ observed reads
+SpliceEvents	9316948	Number of observed splicing events (each read or read-pair that maps across a splice junction is a splice 'event')
+SpliceEvents_KnownLoci	8892994	Number of splice events covering known SJ loci
+SpliceEvents_KnownLociWithFewReads	17907	Number of splice events covering low-coverage known SJ loci
+SpliceEvents_KnownLociWithManyReads	8875087	Number of splice events covering high-coverage known SJ loci
+SpliceEvents_NovelLoci	423954	Number of splice events covering noverl SJ loci
+SpliceEvents_NovelLociWithFewReads	52460	Number of splice events covering low-coverage novel SJ loci
+SpliceEvents_NovelLociWithManyReads	371494	Number of splice events covering high-coverage novel SJ loci
+StrandTest_frFirstStrand	10498331	Number of reads or read-pairs that match the fr_FirstStrand strandedness rule
+StrandTest_frSecondStrand	80952	Number of reads or read-pairs that match the fr_secondstrand strandedness rule
+StrandTest_ambig_genesFountOnBothStrands	872323	Number of reads or read-pairs where the strandedness is ambiguous due to there being genes on both strands
+StrandTest_ambig_noGenes	388121	Number of reads or read-pairs where the strandedness is ambiguous due to there being no known genes.
+StrandTest_ambig_other	3766	Numebr of reads or read-pairs where the strandedness is ambiguous due to other reasons
+StrandTest_STRANDEDNESS_MATCHES_INFERRED	1	1 if the strandedness appears to match the strandedness mode, 0 otherwise.
+NumberOfChromosomesCovered	65	Number of chromosomes with 1 or more aligned reads.
+deletionLoci	51754	Number of observed deletion loci
+insertionLoci	33293	Number of observed insertion loci
+deletionEventCt	212250	Number of times deletions are observed in a read
+insertionEventCt	177678	Number of times insertions are observed in a read
+highCoverageDeletionLoci	2953	Number of high-coverage deletion loci.
+highCoverageInsertionLoci	4183	Number of high-coverage insertion loci
+PAIR_CONTAINS_DEL	203607	Number of read-pairs containing one or more deletions
+PAIR_CONTAINS_INS	194987	Number of read-pairs containing one or more insertions
+PAIR_CONTAINS_INS_AND_DEL	13944	Number of read-pairs containing one or more insertions and deletions
+PAIR_CONTAINS_INDEL	384650	Number of read-pairs containing one or more insertions or deletions
+PAIR_CONTAINS_NO_INDEL	11458843	Number of read-pairs containing no indels
+READ_CONTAINS_DEL_R1	142094	Number of read pairs containing a del in read 1
+READ_CONTAINS_INS_R1	132483	Number of read pairs containing a ins in read 2
+READ_CONTAINS_NO_INDEL_R1	11576973	Number of read pairs containing no indels in read 1
+READ_CONTAINS_DEL_R2	61513	Number of read pairs containing a del in read 2
+READ_CONTAINS_INS_R2	62504	Number of read pairs containing a ins in read 2
+READ_CONTAINS_NO_INDEL_R2	11721748	Number of read pairs containing no indels in read 2
+OM_noOverlap_staggered	0	Number of read-pairs with no overlap, mis-staggered such that the fwd read occurs second.
+OM_noOverlap_normal	3346073	Number of read-pairs with no overlap, arranged normally
+OM_overlap	8497237	Number of read-pairs with good overlap.
+OM_BAD_OVERLAP	183	Number of read-pairs with a bad overlap
+OM_overlap_Match	8391402	Number of read-pairs with a good overlap, and that match perfectly.
+OM_overlap_mismatch	105835	Number of read-pairs with a good overlap, but that contain one or more base mismatches
+NumReadsAtMaxReadLength_R1	10848382	Number of read-1 reads at the max length.
+NumReadsAtMaxReadLength_R2	10101699	Number of read-2 reads at the max length.
+NumReadsTruncated_R1	995111	Number of read-1 reads that are not at the max length.
+NumReadsTruncated_R2	1741794	Number of read-2 reads that are not at the max length.
+NumReadsTruncated_25pct_R1	6582	Number of read-1 reads that are truncated to less than 25% of the max length
+NumReadsTruncated_25pct_R2	10555	Number of read-2 reads that are truncated to less than 25% of the max length
+NumReadsTruncated_50pct_R1	279603	Number of read-1 reads that are truncated to less than 50% of the max length
+NumReadsTruncated_50pct_R2	455760	Number of read-2 reads that are truncated to less than 50% of the max length
+NumReadsTruncated_75pct_R1	595662	Number of read-1 reads that are truncated to less than 75% of the max length
+NumReadsTruncated_75pct_R2	932355	Number of read-2 reads that are truncated to less than 75% of the max length
+READ_LENGTH	151	The read length.
+COMPLETED_WITHOUT_WARNING	0	0 if complete without throwing any warnings. 1 if warnings were thrown.
+QoRTs_initTimeStamp	1551812536229	Time stamp for when QoRTs QC began.
+QoRTs_samDoneTimeStamp	1551815162111	Time stamp for when QoRTs QC finished SAM iteration.
+QoRTs_majorVer	1	QoRTs major version number
+QoRTs_minorVer	3	QoRTs minor version number
+QoRTs_patchVer	6	QoRTs patch version number
+QoRTs_compileTimeStamp	1537888906	The timestamp for when the version of QoRTs was built.
+COMPLETED_WITHOUT_ERROR	1	1 if QoRTs completed without errors. If QoRTs encountered an error, this file should not exist.

@@ -1,0 +1,21 @@
+\documentclass{article}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\begin{document}
+\begin{tikzpicture}
+   \begin{axis}[xlabel=Comparison, ylabel=Number of Transcripts,
+       xlabel near ticks,
+       ybar stacked, xtick=data, xticklabels from table={up}{ID},
+       x tick label style={rotate=45, anchor=east}]
+       \addplot table[x=num, y=pred] {up};
+           \addlegendentry{Predicted lncRNA};
+       \addplot table[x=num, y=Genes] {up};
+           \addlegendentry{Transcripts};
+       \addplot table[x=num, y=pred] {dn};
+           \addlegendentry{Predicted lncRNA};
+       \addplot table[x=num, y=Genes] {dn};
+           \addlegendentry{Transcripts};
+    
+\end{axis} 
+\end{tikzpicture}
+\end{document}

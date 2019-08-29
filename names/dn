@@ -1,0 +1,8 @@
+num	Expr	Genes	pred	ID
+1	dn	-49	0	Ps.vs.PS
+2	dn	0	0	pS.vs.PS
+3	dn	-3	0	ps.vs.PS
+4	dn	-121	-6	pS.vs.Ps
+5	dn	-10	-1	ps.vs.Ps
+6	dn	-17	-1	ps.vs.pS
+7	dn	-82	-1	s.vs.S

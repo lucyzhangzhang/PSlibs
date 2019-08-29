@@ -56,4 +56,4 @@ yuk_shan_pca.R
 *.gz
 
 # lncRNA predictions
-names*
+names/{H*,L*}

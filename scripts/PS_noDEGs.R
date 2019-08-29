@@ -44,3 +44,4 @@ DESeq2Table <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable,
                                           design = ~ reps + condition)
 
 dds <- DESeq(DESeq2Table)
+fpkms2 <- fpkm(dds, robust = T)

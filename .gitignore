@@ -54,3 +54,6 @@ yuk_shan_pca.R
 
 # large files
 *.gz
+
+# lncRNA predictions
+names*

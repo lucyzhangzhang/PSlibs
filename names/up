@@ -1,8 +1,0 @@
-num	Expr	Genes	pred	ID
-1	up	260	5	Ps.vs.PS
-2	up	2	0	pS.vs.PS
-3	up	17	0	ps.vs.PS
-4	up	10	1	pS.vs.Ps
-5	up	0	0	ps.vs.Ps
-6	up	68	5	ps.vs.pS
-7	up	278	10	s.vs.S

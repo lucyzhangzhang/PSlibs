@@ -102,22 +102,25 @@ for (i in 1:length(pred)) {
 }
 
 head(predAnnots)
-
+test <- data.frame(Genes="No predicted genes")
 library(xlsx)
 library(openxlsx)
-{lapply(names(predAnnots), function(name) if (is.na(predAnnots$name) || (nrow(predAnnots$name) == 0)) {
+{lapply(names(predAnnots), function(name) if (is.na(predAnnots[[name]]) || (nrow(predAnnots[[name]]) == 0)) {
 
-           write.xlsx2(data.frame(Genes = "NA"), file = "predictions.xlsx",
+           write.xlsx2(test, file = "predictions.xlsx",
                        sheetName = name, append = T)
 
 } else if (which(names(predAnnots) == name) == 1) {
-           write.xlsx2(data.frame(predAnnots$name), file = "predictions.xlsx",  
+           write.xlsx2(data.frame(predAnnots[[name]]), file = "predictions.xlsx",  
                        sheetName = name, append = F)
 
 } else {
-           write.xlsx2(data.frame(predAnnots$name), file = "predictions.xlsx", 
+           write.xlsx2(data.frame(predAnnots[[name]]), file = "predictions.xlsx", 
                        sheetName = name, append = T)}
 )}
+
+{lapply(names(predAnnots), function(name) write.table(predAnnots[[name]], file = paste0(name, ".tab"), sep = ",", quote = T))}
+
 # for (name in names(predAnnots)) {
 #     write.xlsx2(predAnnots[[name]], file = "predictions.xlsx", sheetName = name, append = T)
 # }

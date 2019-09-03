@@ -28,7 +28,12 @@ Why don't I get the same DEGs as A vs. B when I switch the reference level to B 
 ```
 perl -pe 
 ```
+
 ## Custom `crema` instructions
+
+```
+#!/bin/bash
+```
 
 Output generated from /home/lucy/R/Eutrema/PS/scripts/PS_pairwise.R
 ```
@@ -65,7 +70,9 @@ conda deactivate
 
 conda activate cpat
 
-parallel -j $PROC cpat.py -g {}.fa -o {}.cpat -x $CREMA/cpat_models/ath_hexamer.txt -d $CREMA/cpat_models/ath_logit.RData :::: names
+parallel -j $PROC cpat.py -g {}.fa -o {}.cpat \
+    -x $CREMA/cpat_models/ath_hexamer.txt \
+    -d $CREMA/cpat_models/ath_logit.RData :::: names
 
 conda deactivate
 ```

@@ -1,16 +1,16 @@
 library(DESeq2) #DEG analysis
-library(plyr) #data manipulation
-library(gplots) #graphing and visualization
+# library(plyr) #data manipulation
+# library(gplots) #graphing and visualization
 # library(RColorBrewer) #graphing and visualization
 library(genefilter) #GFF maker
 library(dplyr) #graphing
 library(geneplotter) #graphing
-# library(ggplot2) #graphing
+library(ggplot2) #graphing
 library(GenomicFeatures) #GFF functions makeTxdbFromGff
 library(reshape2) #graphing
 # library(apeglm) #better than ashr
 library(venn) #used for venn
-library(VennDiagram) #used for venn
+# library(VennDiagram) #used for venn
 # library(topGO)  #used for GO enrichment (results not informative)
 # library(Rgraphviz)  #used for GO enrichment
 # library(pheatmap) #used for visualization of DESeq outputs
@@ -386,7 +386,6 @@ GTF2 <- exonsBy(GTF2, by = "gene")
 head(GTF2)
 lengths <- sum(width(reduce(GTF2)))
 lengths <- as.data.frame(lengths)
-lengths
 inter2 <- intersect(rownames(lengths), rownames(dds))
 length(inter2)
 lens <- lengths[row.names(lengths) %in% inter2,]
@@ -870,9 +869,6 @@ pc24plot_nolab
 ggsave(pc24plot_nolab, file="pc24_recoloured_noLabels.pdf")
 
 
-
-
-
 ## loop for all PC1 combinations
 #for (tryThis in 2:4){
 # toUse<-noquote(paste("PC", tryThis, sep=""))
@@ -998,7 +994,7 @@ p2 <- p2[order(p2$PC2, decreasing = T), ]
 
 
 neg2 <- exprVals[which(exprVals[,2] < 0), c(2,4)]
-neg2_50 <- neg2[order(neg2$PC2, decreasing = T)[1:200],]
+neg2_50 <- neg2[order(neg2$PC2)[1:200],]
 neg2_fpkm <- FPKM[rownames(FPKM) %in% rownames(neg2_50),]  
 neg2_genes <- expr_annot[rownames(expr_annot) %in% rownames(neg2_50),]
 neg2_genes <- merge(neg2_50, neg2_genes[,18:ncol(neg2_genes)], by = 0)
@@ -1018,7 +1014,7 @@ p4 <- cbind(pos4_fpkm, pos4_genes)
 p4 <- p4[order(p4$PC4, decreasing = T),]
 
 neg4 <- exprVals[which(exprVals[,4] < 0), c(2,4)]
-neg4_50 <- neg4[order(neg4$PC4, decreasing = T)[1:200],]
+neg4_50 <- neg4[order(neg4$PC4)[1:200],]
 neg4_fpkm <- FPKM[rownames(FPKM) %in% rownames(neg4_50),]  
 neg4_genes <- expr_annot[rownames(expr_annot) %in% rownames(neg4_50),]
 neg4_genes <- merge(neg4_50, neg4_genes[,18:ncol(neg4_genes)], by = 0)
@@ -1031,6 +1027,12 @@ write.xlsx2(p2, file = "meanPCA_loadings.xlsx", sheetName = "Pos2", append = F, 
 write.xlsx2(n2, file = "meanPCA_loadings.xlsx", sheetName = "Neg2", append = T, row.names = T)
 write.xlsx2(p4, file = "meanPCA_loadings.xlsx", sheetName = "Pos4", append = T, row.names = T)
 write.xlsx2(n4, file = "meanPCA_loadings.xlsx", sheetName = "Neg4", append = T, row.names = T)
+
+write(rownames(p2), "p2.names", sep = "\n")
+write(rownames(n2), "n2.names", sep = "\n")
+write(rownames(p4), "p4.names", sep = "\n")
+write(rownames(n4), "n4.names", sep = "\n")
+
 ####################
 # Pos PC2, Neg PC4 #
 ####################
@@ -1233,12 +1235,15 @@ exprVals_lab <- cbind(exprVals, labels_pos2neg4, labels_pos2pos4, labels_neg2neg
 ### Labelling plot!
 library(ggrepel)
 library(shadowtext)
+pred.names <- scan("~/R/Eutrema/PS/crema/pcaLoading/pred.names", what = "character")
+pcaSum <- as.data.frame(summary(pca)$importance)
 
 set.seed(51)
-(mean <- ggplot(exprVals, aes_string("PC2", "PC4")) +
+mean <- (ggplot(exprVals, aes_string("PC2", "PC4")) +
     geom_point(shape=19, alpha=0.3) +
     geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Treatment), arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
-    plot.points(points, exprVals) +
+    geom_point(data = exprVals[which(toupper(rownames(exprVals)) %in% toupper(pred.names)) ,], colour="#2851b5", size=2) +    
+    #     plot.points(points, exprVals) +
     #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], colour="#2851b5", size=2) +
     #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], aes(PC2,PC4, label = "SDI1"), nudge_y = 0.07) +
     #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], colour="#2851b5", size=2) +
@@ -1248,27 +1253,13 @@ set.seed(51)
     #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10005068m.g" ,], colour="#2851b5", size=2) +
     #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10005068m.g" ,], aes(PC2,PC4, label = "Rhodanese"), nudge_y = 0.07) +
   scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
-    xlab("PC2 (0.78%)") + ylab("PC4 (0.22%)") +
+    xlab(paste0("PC2 ", pcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ",pcaSum$PC4[2]*100,"%")) +
     coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)))
 mean
 median
 # ggsave("PSMean.pdf", mean, dpi = 250, height = 6, width = 8)
-ggsave("PSMeannoLabel.pdf", mean, dpi = 250, height = 6, width = 8)
+ggsave("~/R/Eutrema/PS/PSMeanPred.pdf", mean, dpi = 250, height = 6, width = 8)
 write.xlsx(p2n4, file = "meantopPCA_loadings.xlsx", sheetName = "Pos2Neg4", append = F)
 write.xlsx(p2p4, file = "meantopPCA_loadings.xlsx", sheetName = "Pos2Pos4", append = T)
 write.xlsx(n2p4, file = "meantopPCA_loadings.xlsx", sheetName = "Neg2Pos4", append = T)
 write.xlsx(n2n4, file = "meantopPCA_loadings.xlsx", sheetName = "Neg2Neg4", append = T)
-####################FIND Top 50 loading genes###################
-
-medPCA <- PCA(log2(ps_med + 1), graph = F)
-meanpCA <- PCA(log2(ps_mean + 1), graph = F)
-
-fviz_pca_ind(medPCA, col.ind = "cos2", 
-alpha.ind = 0.5, label = "none", axes = c(2,4)) +
-scale_color_gradient2(low = "yellow", mid = "blue", high = "red", midpoint = 0.5)
-
-head(medPCA$ind$cos2)
-head(medPCA$ind$contrib)
-
-fviz_contrib(medPCA, choice = "ind", axes = 2:4, top = 50)
-

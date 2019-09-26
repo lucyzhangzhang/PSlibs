@@ -31,6 +31,8 @@ perl -pe
 
 ## Custom `crema` instructions
 
+Before running `crema`, you have to [filter out ribosomal reads!].
+
 ```
 #!/bin/bash
 ```

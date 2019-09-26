@@ -1,6 +1,6 @@
 library(dplyr)
 library(tibble)  # for `rownames <- to <- column` and `column <- to <- rownames`
-library(methods)
+library(methods) # to make the S4 object
 
 wd  <- "~/R/Eutrema/PS/names"
 setwd(wd)
@@ -184,3 +184,93 @@ dn <- data %>% filter(Expr == "dn") %>% mutate(Genes = Genes * -1, pred = pred *
 write.table(cbind(num = rownames(up), up), file = "up", row.names = F, quote = F, col.names = T, sep = "\t")
 write.table(cbind(num = rownames(dn), dn), file = "dn", row.names = F, quote = F, col.names = T, sep = "\t")
 
+#############################PCA loading predictions###############################
+ setwd("~/R/Eutrema/PS/crema/pcaLoading")
+
+library(ggplot2)
+FPKM <- read.table("~/R/Eutrema/PS/FPKMS_LengthAdjusted2.tab", header = T, row.names = 1)
+sampNames <- c("ps1", "ps2", "ps3", "Ps1", "Ps2", "Ps3", "pS1", "pS2", "pS3", "PS1", "PS2", "PS3")
+colnames(FPKM) <- sampNames
+
+p2.raw <- read.csv("~/R/Eutrema/PS/crema/pcaLoading/p2/final_ensemble_predictions.csv", header = T, row.names = 1)
+n2.raw <- read.csv("~/R/Eutrema/PS/crema/pcaLoading/n2/final_ensemble_predictions.csv", header = T, row.names = 1)
+p4.raw <- read.csv("~/R/Eutrema/PS/crema/pcaLoading/p4/final_ensemble_predictions.csv", header = T, row.names = 1)
+n4.raw <- read.csv("~/R/Eutrema/PS/crema/pcaLoading/n4/final_ensemble_predictions.csv", header = T, row.names = 1)
+
+p2.predname <- rownames(p2.raw[which(p2.raw$prediction == 1),])
+n2.predname <- rownames(n2.raw[which(n2.raw$prediction == 1),])
+p4.predname <- rownames(p4.raw[which(p4.raw$prediction == 1),])
+n4.predname <- rownames(n4.raw[which(n4.raw$prediction == 1),])
+
+pred.names <- union(union(p2.predname, n2.predname),union(p4.predname, n4.predname))
+write(pred.names, "~/R/Eutrema/PS/crema/pcaLoading/pred.names", sep = "\n")
+fpkm <- read.table("~/R/Eutrema/PS/FPKMS_LengthAdjusted2.tab", row.names=1, header = T) #scp from McMaster cluster
+
+fpkm.val <- fpkm[,c(1:12)]
+
+ps <- fpkm.val[,1:3]
+Ps <- fpkm.val[,4:6]
+pS <- fpkm.val[,7:9]
+PS <- fpkm.val[,10:12]
+
+pS <- (pS=rowMeans(pS))
+Ps <- (Ps=rowMeans(Ps))
+ps <- (ps=rowMeans(ps))
+PS <- (PS=rowMeans(PS))
+
+ps_mean <- cbind(ps, pS, Ps, PS)
+
+## all genes
+pca<- prcomp(ps_mean, center=TRUE, scale=TRUE)  # PCA with centering and scaling
+pca$rotation  # The loadings are here
+
+sdev <- pca$sdev
+
+screeplot(pca)
+#log.expr <- log2(expr+1)
+
+plot(pca, type = "l")
+summary(pca)
+exprVals<-data.frame(pca$x)
+sampleVals<-data.frame(pca$rotation)
+
+plot.points <- function(points, data){
+    subset <- data[which(toupper(rownames(data)) %in% toupper(points)),]
+    plot <- ggplot(subset, aes_string("PC2", "PC4"))+
+        geom_point(shape = 19, size = 2)
+}
+
+test <- plot.points(pred.names, exprVals)
+samples <- c("ps", "pS", "Ps", "PS")
+coords <- data.frame(X=rep(0, 4), Y=rep(0, 4),sampleVals, Samples = samples)
+coords$Treatment <- factor(coords$Samples, c("ps", "pS", "Ps", "PS"))
+pcaSum <- as.data.frame(summary(pca)$importance)
+(mean <- ggplot(exprVals, aes_string("PC2", "PC4")) +
+    geom_point(shape=19, alpha=0.3) +
+    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Treatment), arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
+    geom_point(data = exprVals[which(toupper(rownames(exprVals)) %in% toupper(pred.names)) ,], colour="#2851b5", size=2) +
+    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], colour="#2851b5", size=2) +
+    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], aes(PC2,PC4, label = "IPS2"), nudge_y = 0.07) +
+    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10018244m.g" ,], colour="#2851b5", size=2) +
+    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10018244m.g" ,], aes(PC2,PC4, label = "SULTR1;2"), nudge_y = 0.07) +
+    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10005068m.g" ,], colour="#2851b5", size=2) +
+    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10005068m.g" ,], aes(PC2,PC4, label = "Rhodanese"), nudge_y = 0.07) +
+  scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
+    xlab(paste0("PC2 ", pcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ",pcaSum$PC4[2]*100,"%")) +
+    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)) )
+mean
+ggsave("~/R/Eutrema/PS/PSMeanPred1Up.pdf", mean, dpi = 250, height = 6, width = 8)
+
+#############ALL GENES##################
+
+
+ps_mean <- data.frame(ps, pS, Ps, PS)
+ps_filt <- ps_mean[(ps_mean$ps >= 1) | (ps_mean$Ps >= 1) | (ps_mean$pS >= 1) | (ps_mean$PS >= 1),]
+colnames(ps_filt) <- colnames(ps_mean)
+psn <- rownames(ps.filt[which(ps.filt$ps != 0),])
+Psn <- rownames(ps.filt[which(ps.filt$Ps != 0),])
+pSn <- rownames(ps.filt[which(ps.filt$pS != 0),])
+PSn <- rownames(ps.filt[which(ps.filt$PS != 0),])
+
+allGN <- union(union(psn, PSn), union(pSn, Psn))
+write(allGN, "~/R/Eutrema/PS/crema/allG/allG.names", sep = "\n")

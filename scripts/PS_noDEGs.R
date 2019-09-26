@@ -89,26 +89,171 @@ PS <- (PS=rowMeans(PS))
 
 
 ps.mean <- data.frame(ps, pS, Ps, PS)
+
+# removing rows with under 1 FPKM expression in any treatment 
 ps.filt <- ps.mean
+
 ps.filt <- ps.filt[(ps.mean$ps >= 1) | (ps.mean$Ps >= 1) | (ps.mean$pS >= 1) | (ps.mean$PS >= 1),]
 colnames(ps.filt) <- colnames(ps.mean)
-for (i in 1:nrow(ps.mean)) {
-    row <- ps.mean[i,]
-    rownames(row) <- rownames(ps.mean[i,]) 
-    if (any(row >= 1)) {
-        ps.filt <- rbind(ps.filt, row)
-    }        
-}
+
+
+# for (i in 1:nrow(ps.mean)) {
+#     row <- ps.mean[i,]
+#     rownames(row) <- rownames(ps.mean[i,]) 
+#     if (any(row >= 1)) {
+#         ps.filt <- rbind(ps.filt, row)
+#     }        
+# }
 
 sets <- list(ps=rownames(ps.filt[which(ps.filt$ps != 0),]),
              Ps=rownames(ps.filt[which(ps.filt$Ps != 0),]),
              pS=rownames(ps.filt[which(ps.filt$pS != 0),]),
              PS=rownames(ps.filt[which(ps.filt$PS != 0),]))
-pdf("PSIntersect.pdf", width = 5, height = 5)
-venn(sets, zcolor = "style")
+pdf("PSIntersectBW.pdf", width = 5, height = 5)
+venn(sets)
 dev.off()
 
-ps <- rownames(ps.filt[which(ps.filt$ps != 0),])
-Ps <- rownames(ps.filt[which(ps.filt$Ps != 0),])
-pS <- rownames(ps.filt[which(ps.filt$pS != 0),])
-PS <- rownames(ps.filt[which(ps.filt$PS != 0),])
+psn <- rownames(ps.filt[which(ps.filt$ps != 0),])
+Psn <- rownames(ps.filt[which(ps.filt$Ps != 0),])
+pSn <- rownames(ps.filt[which(ps.filt$pS != 0),])
+PSn <- rownames(ps.filt[which(ps.filt$PS != 0),])
+
+setTest <- function(x) {
+    setID <- rep(0, 4)
+    if (x %in% psn) {
+        setID[1] <- 1
+    }
+    if (x %in% Psn) {
+        setID[2] <- 1
+    }
+    if (x %in% pSn) {
+        setID[3] <- 1
+    }
+    if (x %in% PSn) {
+        setID[4] <- 1
+    }
+   return(paste(setID, collapse = ""))
+}
+
+library(ggplot2)
+
+allGenes <- data.frame(Genes = union(union(psn, PSn), union(pSn, Psn)))
+allGenes <- mutate(allGenes, setID = sapply(allGenes$Genes, setTest))
+someGenes <- allGenes %>% filter(setID != "1111") %>% arrange(., setID)
+
+FPKMsomeGenes <- ps.mean[rownames(ps.mean) %in% someGenes$Genes,]
+FPKMsomeGenes <- data.frame(Names=rownames(FPKMsomeGenes), FPKMsomeGenes, stringsAsFactors = F)
+
+# reorder data based on column of another data set
+FPKMsomeGenes <- FPKMsomeGenes[order(match(FPKMsomeGenes$Names, someGenes$Genes)), ]
+FPKMsomeGenes <- data.frame(setID=someGenes$setID, FPKMsomeGenes, stringsAsFactors = F)
+
+write(unique(FPKMsomeGenes$Names), "someGenes", sep = "\n")
+#############DO CREMA SHENANIGANS HERE####################
+#predict some genes
+setwd("/home/lucy/R/Eutrema/PS/crema")
+
+some.predictions <- read.csv("final_ensemble_predictions.csv", header = T, row.names = 1)
+some.predictions <- some.predictions[order(match(toupper(rownames(some.predictions)), toupper(FPKMsomeGenes$Names))),] 
+
+FPKMsomeGenes <- cbind(FPKMsomeGenes, prediction = factor(some.predictions$prediction, levels = c(0, 1)), stringsAsFactors = F)
+
+FPsomeG.melt <- melt(FPKMsomeGenes, id = c("Names", "setID", "prediction"))
+FPsomeG.melt$variable <- substr(FPsomeG.melt$variable,1, 2) 
+FPsomeG.melt <- FPsomeG.melt[FPsomeG.melt$value != 0,]
+
+some.plot <- {ggplot(FPsomeG.melt, aes(x = variable, y = value, color = setID, shape = prediction, size = prediction)) + 
+    geom_point(position = "jitter")
+}
+    some.plot
+ggsave("someFPKMs.pdf", some.plot, dpi = 300, height = 8, width = 6)
+
+PCA <- prcomp(FPKMsomeGenes[,3:6], center = T, scale = T)
+plot(PCA)
+biplot(PCA)
+summary(PCA)
+exprVals<-data.frame(PCA$x)
+sampleVals<-data.frame(PCA$rotation)
+
+ggsave("PCAintersect.pdf", 
+{ggplot() +
+    geom_point(data=exprVals, aes(x = PC1, y = PC2, color = FPKMsomeGenes$setID)) +
+    geom_segment(data = sampleVals, aes(x = 0, y = 0, xend = PC1, yend = PC2), arrow = arrow(), show.legend = T) + 
+    scale_color_discrete(name = "Grouping")
+}, dpi = 300, height = 8, width = 9)
+
+######ADDING THE FIELD LIBRARIES##########
+setwd("~/R/Eutrema/PS")
+
+#specifying the reference level
+ condition <- c("F", "F", "F", "ps", "ps", rep(c("Ps", "pS", "PS"), each = 3))
+ sampleF <- c("Y-F2003-1",
+               "Y-F2003-2",
+               "cracker",
+               # sampleNO <- c("ps12_S3",
+               #                "ps12_S3",
+              "ps48_S10",
+              "ps49_S11",
+              "ps11_S2",
+              "ps40_S6",
+              "ps46_S9",
+              "ps10_S1",
+              "ps38_S5",
+              "ps44_S8",
+              "ps37_S4",
+              "ps41_S7",
+              "ps50_S12")
+
+metadata <- data.frame(sample = sampleF,
+                       condition = condition,
+                       libraryName = sampleF)
+
+metadata <- mutate(metadata, countFile = paste0(metadata$libraryName, "/QC.geneCounts.formatted.for.DESeq.txt"))
+sampleTable <- data.frame(sampleName = metadata$libraryName,
+                          fileName = metadata$countFile,
+                          condition = metadata$condition,
+                          sample = metadata$sample)
+
+
+DESeq2Table <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable,
+                                          directory = "QoRTs",
+                                          design = ~condition)
+
+dds.f <- DESeq(DESeq2Table)
+lens <- lengths[row.names(lengths) %in% inter2,]
+
+######################FPKM median length#################
+lenMedian <- median(lens)
+mcols(dds.f)$basepairs <- lenMedian
+fpkm.f <- fpkm(dds.f, robust = T)
+fpkm.f[row.names(fpkm.f) %in% "nXLOC_008023", ]
+colnames(fpkm.f) <- c("2003-1", "2003-2", "CC", "ps1", "ps2",  "Ps1", "Ps2", "Ps3", "pS1", "pS2", "pS3", "PS1", "PS2", "PS3")
+
+F2003.1 <- rownames(fpkm.f[which(fpkm.f[,1] != 0),])
+F2003.2 <- rownames(fpkm.f[which(fpkm.f[,2] != 0),])
+ccn <- rownames(fpkm.f[which(fpkm.f[,3] != 0),])
+allGeneN <- union(union(psn, PSn), union(pSn, Psn))
+
+fSets <- list(cab=allGeneN,
+              F2003.1=F2003.1,
+              F2003.2=F2003.2,
+              CC=ccn)
+pdf("fieldVenn.pdf", width = 5, height = 5)
+venn(fSets)
+dev.off()
+
+field.union <- union(union(F2003.1, F2003.2), ccn)
+write(field.union, "fieldunion.names", sep = "\n")
+
+field.exp.raw <- read.csv("crema/fieldG/final_ensemble_predictions.csv", header = T)
+field.specific <- field.exp.raw[!toupper(field.exp.raw[,1]) %in% toupper(allGeneN), ]
+field.spec.pred <- field.specific %>% filter(prediction == 1)
+# write.table(field.spec.pred, "test", sep = "\t", quote = F)
+
+# expr_annot doesn't have all the field expressed genes because it's generated from lib
+full.annot <- read.csv("~/Eutrema/FPKM/2018-10-15-drought_geneFPKM.csv", header = T)
+# remove duplicated rows
+full.annot <- full.annot[!duplicated(full.annot[,1]),]
+rownames(full.annot) <- full.annot[,1]
+fsp.annot <- expr_annot[toupper(rownames(full.annot)) %in% toupper(field.spec.pred[,1]),]
+write.table(fsp.annot, "fsp.annot.tab", sep = "\t", quote = F)

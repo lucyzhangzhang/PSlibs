@@ -185,6 +185,7 @@ write.table(cbind(num = rownames(up), up), file = "up", row.names = F, quote = F
 write.table(cbind(num = rownames(dn), dn), file = "dn", row.names = F, quote = F, col.names = T, sep = "\t")
 
 #############################PCA loading predictions###############################
+
  setwd("~/R/Eutrema/PS/crema/pcaLoading")
 
 library(ggplot2)
@@ -274,3 +275,52 @@ PSn <- rownames(ps.filt[which(ps.filt$PS != 0),])
 
 allGN <- union(union(psn, PSn), union(pSn, Psn))
 write(allGN, "~/R/Eutrema/PS/crema/allG/allG.names", sep = "\n")
+
+all.pred.result <- read.csv("~/R/Eutrema/PS/crema/allG/final_ensemble_predictions.csv", header = T, row.names = 1)
+allPredNames <- rownames(all.pred.result[which(all.pred.result$prediction == 1),])
+(allGP <- ggplot(exprVals, aes_string("PC2", "PC4")) +
+    geom_point(shape=19, alpha=0.3) +
+    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Treatment), arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
+    geom_point(data = exprVals[which(toupper(rownames(exprVals)) %in% toupper(allPredNames)) ,], colour="#2851b5", size=2) +
+    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], colour="#2851b5", size=2) +
+    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], aes(PC2,PC4, label = "IPS2"), nudge_y = 0.07) +
+    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10018244m.g" ,], colour="#2851b5", size=2) +
+    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10018244m.g" ,], aes(PC2,PC4, label = "SULTR1;2"), nudge_y = 0.07) +
+    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10005068m.g" ,], colour="#2851b5", size=2) +
+    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10005068m.g" ,], aes(PC2,PC4, label = "Rhodanese"), nudge_y = 0.07) +
+  scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
+    xlab(paste0("PC2 ", pcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ",pcaSum$PC4[2]*100,"%")) +
+    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)) )
+allGP
+
+library(shadowtext)
+filtered <- read.csv("~/R/Eutrema/PS/crema/filterRibosom/final_ensemble_predictions.csv", 
+                     header = T, row.names = 1) 
+
+filtName <- rownames(filtered[which(filtered$prediction == 1),])
+write(filtName, "~/R/Eutrema/PS/filter.name", sep = "\n")
+filtExpr.subset <- exprVals[which(toupper(rownames(exprVals)) %in% toupper(filtName)) ,]
+# filtSubSubset <- rbind(filtExpr.subset[which(abs(filtExpr.subset$PC2) >= 0.1),], filtExpr.subset[which(abs(filtExpr.subset$PC4) >= 0.1),])
+filtSubSubset <- filtExpr.subset[which(abs(filtExpr.subset$PC2) >= 0.08 | abs(filtExpr.subset$PC4 >= 0.08)),]
+(filtPCA <- ggplot(exprVals, aes_string("PC2", "PC4")) +
+    geom_point(shape=19, alpha=0.3, color = "azure3") +
+    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Treatment), arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
+    geom_point(data = filtExpr.subset, color = "deepskyblue", fill = "deepskyblue", size=2, pch = 21) +
+    geom_point(data = filtSubSubset, color = "deepskyblue", fill = "lightpink", size=2, pch = 21) +
+    geom_text_repel(data = filtSubSubset, aes(label = rownames(filtSubSubset)), color = "black",
+                    segment.color = "deepskyblue4") +
+    #     geom_shadowtext(data = filtSubSubset, aes(label = rownames(filtSubSubset)), color = "white",
+    #                     segment.color = "deepskyblue4") +
+    #     geom_shadowtext(data = filtSubSubset, aes(label = rownames(filtSubSubset))) +
+
+    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], colour="#2851b5", size=2) +
+    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], aes(PC2,PC4, label = "IPS2"), nudge_y = 0.07) +
+    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10018244m.g" ,], colour="#2851b5", size=2) +
+    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10018244m.g" ,], aes(PC2,PC4, label = "SULTR1;2"), nudge_y = 0.07) +
+    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10005068m.g" ,], colour="#2851b5", size=2) +
+    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10005068m.g" ,], aes(PC2,PC4, label = "Rhodanese"), nudge_y = 0.07) +
+  scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
+    xlab(paste0("PC2 ", pcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ",pcaSum$PC4[2]*100,"%")) +
+    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)) )
+filtPCA
+ggsave("~/R/Eutrema/PS/PCAsubset.pdf", filtPCA, dpi = 250, height = 6, width = 8)

@@ -503,10 +503,6 @@ ggsave("vst-pcoaS.png", pocaS, height = 4, width = 6, dpi = 125)
 
 
 ##################PCA#################
-library(FactoMineR)
-library(factoextra)
-
-
 # fpkmPCA <- prcomp(fpkms2, center = T,  scale = T)
 # nonAdj <- fviz_pca_var(fpkmPCA,geom = c("point") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(2, 3))
 # fviz_pca_var(fpkmPCA,geom = c("point") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(1, 2))
@@ -1236,13 +1232,15 @@ exprVals_lab <- cbind(exprVals, labels_pos2neg4, labels_pos2pos4, labels_neg2neg
 library(ggrepel)
 library(shadowtext)
 pred.names <- scan("~/R/Eutrema/PS/crema/pcaLoading/pred.names", what = "character")
+
+filtName <- scan("~/R/Eutrema/PS/filter.name", what = "character")
 pcaSum <- as.data.frame(summary(pca)$importance)
 
 set.seed(51)
-mean <- (ggplot(exprVals, aes_string("PC2", "PC4")) +
+meanplot <- (ggplot(exprVals, aes_string("PC2", "PC4")) +
     geom_point(shape=19, alpha=0.3) +
     geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Treatment), arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
-    geom_point(data = exprVals[which(toupper(rownames(exprVals)) %in% toupper(pred.names)) ,], colour="#2851b5", size=2) +    
+    geom_point(data = exprVals[which(toupper(rownames(exprVals)) %in% toupper(filtName)) ,], colour="darkcyan", size=2) +    
     #     plot.points(points, exprVals) +
     #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], colour="#2851b5", size=2) +
     #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], aes(PC2,PC4, label = "SDI1"), nudge_y = 0.07) +
@@ -1255,10 +1253,11 @@ mean <- (ggplot(exprVals, aes_string("PC2", "PC4")) +
   scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
     xlab(paste0("PC2 ", pcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ",pcaSum$PC4[2]*100,"%")) +
     coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)))
-mean
+meanplot
 median
 # ggsave("PSMean.pdf", mean, dpi = 250, height = 6, width = 8)
 ggsave("~/R/Eutrema/PS/PSMeanPred.pdf", mean, dpi = 250, height = 6, width = 8)
+ggsave("~/R/Eutrema/PS/PSMeanPred.pdf", meanplot, dpi = 250, height = 6, width = 8)
 write.xlsx(p2n4, file = "meantopPCA_loadings.xlsx", sheetName = "Pos2Neg4", append = F)
 write.xlsx(p2p4, file = "meantopPCA_loadings.xlsx", sheetName = "Pos2Pos4", append = T)
 write.xlsx(n2p4, file = "meantopPCA_loadings.xlsx", sheetName = "Neg2Pos4", append = T)

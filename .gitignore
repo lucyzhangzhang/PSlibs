@@ -22,6 +22,7 @@ DESeq2.R
 
 # output pictures
 *.png
+*.pdf
 
 # vim files
 *.swp
@@ -52,6 +53,7 @@ yuk_shan_pca.R
 
 # weird shit
 .directory
+.nfs*
 
 # large files
 *.gz

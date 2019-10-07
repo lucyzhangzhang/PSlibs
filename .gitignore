@@ -34,6 +34,7 @@ DESeq2.R
 *.out
 *.csv
 *.ods
+*.name
 
 # Except this file which is required for PCA
 # Really you don't need this just have a

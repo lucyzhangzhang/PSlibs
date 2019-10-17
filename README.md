@@ -69,7 +69,7 @@ done < names
 #exit
 ```
 
-Run cpat, make sure it's in an environment with Python2 installed
+Run CPAT, make sure it's in an environment with Python 2 installed
 
 ```
 conda deactivate
@@ -111,8 +111,16 @@ The above package is also deprecated and their recommended alternative seems to 
 
 See: [*Arabidopsis* QTL mapping paper](https://bmcplantbiol.biomedcentral.com/articles/10.1186/s12870-019-1996-3)
 
-See of these QTLs are found in *Eutrema* Yukon and if their expression levels remark anything interesting.
+See if these QTLs (in supp file 4 of the paper), particularly the PHO and PUE group are found in *Eutrema* Yukon and if their expression levels remark anything interesting.
 
-* Probably have to use STAR to re-map genes that occur on the QTLs to the Shandong reference genome
-* Get read counts with QoRTs and get FPKMs with DESeq2
-* Plot expression levels for each treatment?
+* Use Phytozome/Phytomine Python API to get homolog genes and sequences (really powerful tool)
+* [R script](./scripts/PS_QTL.R) calls the [Python script](./scripts/phytozomeQTL/py) which queries Phytozome through the Phytomine API
+
+Three common genes mapped in these two QTL groups
+
+```
+intersect(PHO, PUE)
+
+  [1] "AT1G24020" "AT1G47970" "AT1G47980"
+```
+

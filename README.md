@@ -33,6 +33,10 @@ perl -pe
 
 Before running `crema`, you have to [filter out ribosomal reads!](./scripts/ribosomeFilter.sh).
 
+(Or don't filter, Elizabeth says that some ribosomal reads can also be lncRNA depending on how they were processed)
+
+(In the spirit of keeping everything, might not even filter FPKMs less than 1 because lncRNA that are related to stress seems to have very low expression in general)
+
 ```
 #!/bin/bash
 ```
@@ -93,3 +97,22 @@ Run the lncRNA prediction tool
 conda activate renv
 parallel -j $PROC python3 $CREMA/bin/predict.py -f {}.fa -c {}.cpat -d {}.diamond :::: names
 ```
+## Weighted gene co-expression network analysis
+
+With R package WGCNA (no longer supported), however still a good diagnostic analysis to explore data. 
+
+See: [K-means clustering paper](https://bmcsystbiol.biomedcentral.com/articles/10.1186/s12918-017-0420-6#article-info)
+
+The above package is also deprecated and their recommended alternative seems to be optimized for animal tissue types.
+
+[Script](./scripts/PS_wgcna.R)
+
+## Looking for QTLs
+
+See: [*Arabidopsis* QTL mapping paper](https://bmcplantbiol.biomedcentral.com/articles/10.1186/s12870-019-1996-3)
+
+See of these QTLs are found in *Eutrema* Yukon and if their expression levels remark anything interesting.
+
+* Probably have to use STAR to re-map genes that occur on the QTLs to the Shandong reference genome
+* Get read counts with QoRTs and get FPKMs with DESeq2
+* Plot expression levels for each treatment?

@@ -8,10 +8,10 @@ library(geneplotter) #graphing
 library(ggplot2) #graphing
 library(GenomicFeatures) #GFF functions makeTxdbFromGff
 library(reshape2) #graphing
-# library(apeglm) #better than ashr
+library(apeglm) #better than ashr
 library(venn) #used for venn
 # library(VennDiagram) #used for venn
-# library(topGO)  #used for GO enrichment (results not informative)
+library(topGO)  #used for GO enrichment (results not informative)
 # library(Rgraphviz)  #used for GO enrichment
 # library(pheatmap) #used for visualization of DESeq outputs
 
@@ -102,32 +102,20 @@ library(ggrepel)
 # }
 
 
-# rldS <- rld[, rld$condition %in% c("ps", "Ps", "pS", "PS")]
-
 #how many genes are significantly expressed
-png("PCA_samplesno.png", height = 700, width = 1000, res = 125)
-DESeq2::plotPCA(rldS, intgroup=c("condition"))
-dev.off()
+# png("PCA_samplesno.png", height = 700, width = 1000, res = 125)
+# DESeq2::plotPCA(rldS, intgroup=c("condition"))
+# dev.off()
 resultsNames(dds)
 #[1] "Intercept"              "condition_F_vs_PS"  "condition_Ps_vs_PS" "condition_pS_vs_PS" "condition_ps_vs_PS"
 
 res1_2 <- lfcShrink(dds, coef = "condition_Ps_vs_PS", type = "apeglm")
 res1_3 <- lfcShrink(dds, coef = "condition_pS_vs_PS", type = "apeglm")
 res1_4 <- lfcShrink(dds, coef = "condition_ps_vs_PS", type = "apeglm")
-# res1_I <- lfcShrink(dds, coef = "Intercept", type = "apeglm")
-# res1_F <- lfcShrink(dds, coef = "condition_F_vs_PS", type = "apeglm")
 res.Ps <- results(dds, contrast = c("condition", "Ps", "PS"))
 res.pS <- results(dds, contrast = c("condition", "pS", "PS"))
 res.ps <- results(dds, contrast = c("condition", "ps", "PS"))
 #########################PLOTTING###############################################
-# r1_I <- cbind.data.frame(row.names(res1_I), rep(0, nrow(res1_I)), res1_I$lfcSE, rep("PS", nrow(res1_I)))
-# colnames(r1_I) <- c("gene", "lfc", "se", "sample")
-# r1_2 <- cbind.data.frame(row.names(res1_2), res1_2$log2FoldChange, res1_2$lfcSE, rep("Ps", nrow(res1_2)))
-# colnames(r1_2) <- c("gene", "lfc", "se", "sample")
-# r1_3 <- cbind.data.frame(row.names(res1_3), res1_3$log2FoldChange, res1_3$lfcSE, rep("pS", nrow(res1_3)))
-# colnames(r1_3) <- c("gene", "lfc", "se", "sample")
-# r1_4 <- cbind.data.frame(row.names(res1_4), res1_4$log2FoldChange, res1_4$lfcSE, rep("ps", nrow(res1_4)))
-# colnames(r1_4) <- c("gene", "lfc", "se", "sample")
 r1_2 <- cbind.data.frame(row.names(res.Ps), res.Ps$log2FoldChange, res.Ps$lfcSE, rep("Ps", nrow(res.Ps)))
 colnames(r1_2) <- c("gene", "lfc", "se", "sample")
 r1_3 <- cbind.data.frame(row.names(res.pS), res.pS$log2FoldChange, res.pS$lfcSE, rep("pS", nrow(res.pS)))
@@ -139,7 +127,7 @@ colnames(r1_4) <- c("gene", "lfc", "se", "sample")
 lists <- rbind(r1_2, r1_3, r1_4)
 IPS <- lists[lists$gene %in% "Thhalv10015137m.g", ]
 
-ggplot(IPS, aes(x = sample, y = lfc)) +
+{ggplot(IPS, aes(x = sample, y = lfc)) +
   geom_point() +
   xlab(paste0(as.character(IPS$gene[1]), " expression")) +
   geom_hline(yintercept = 0, linetype = "dotted") +
@@ -150,7 +138,7 @@ ggplot(IPS, aes(x = sample, y = lfc)) +
           axis.text.x = element_blank(),
           legend.position = "none",
           legend.title = element_blank(),
-          axis.title.y = element_blank())
+          axis.title.y = element_blank())}
 
 genes <- read.table("Genes")
 genes2 <- genes[genes[,2] %in% lists$gene, ]
@@ -182,6 +170,7 @@ thing <- sapply(oldNames, graph, USE.NAMES = F, simplify = F)
 plotted <- plot_grid(plotlist = thing,  ncol = 4, align =  "v")
 # plotted
 plotted <- grid.arrange(arrangeGrob(plotted, left = textGrob("log2-fold Change", rot = 90, vjust = 1)))
+plotted
 # ggsave("BeforeDotComp.png", plotted, height = 12, width = 11, dpi = 300)
 ggsave("DEGnoShrink.png", plotted, height = 12, width = 11, dpi = 300)
 
@@ -238,8 +227,8 @@ rownames(GOres1_4) <- res1_4@rownames
 GOres1_F <- as.data.frame(res1_F@listData)
 rownames(GOres1_F) <- res1_F@rownames
 
-dat <- list(Ps=GOres1_2, pS=GOres1_3, ps=GOres1_4, F=GOres1_F)
-names <- c("Ps", "pS", "ps", "F")
+dat <- list(Ps=GOres1_2, pS=GOres1_3, ps=GOres1_4)
+names <- c("Ps", "pS", "ps")
 
 i=1
 
@@ -503,85 +492,17 @@ ggsave("vst-pcoaS.png", pocaS, height = 4, width = 6, dpi = 125)
 
 
 ##################PCA#################
-# fpkmPCA <- prcomp(fpkms2, center = T,  scale = T)
-# nonAdj <- fviz_pca_var(fpkmPCA,geom = c("point") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(2, 3))
-# fviz_pca_var(fpkmPCA,geom = c("point") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(1, 2))
-# ggsave("fpkm23", nonAdj, dpi = 125, height = 7, width = 7)
-# fpkmPCA <- prcomp(fpkms2, center = T,  scale = T)
-# fviz_pca_var(fpkmPCA,geom = c("point") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(2, 3))
-# ggsave("fpkm23.png", nonAdj, dpi = 125, height = 7, width = 7)
-
-# fpkmPCA2 <- princomp(fpkms2, cor = F,  scores = T)
-
 #median lengths adjusted FPKMs
 fpkmlog <- log2(fpkmLenAdj+1)
 fpkmLnAdj <- prcomp(fpkmlog, center = T, scale = T)
-# fviz_pca_var(fpkmLnAjPCA,geom = c("point", "text") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(1, 2))f
-# fpkmLnAjPCA2 <- princomp(fpkmLenAdj, cor = T, scores = T)
-# fviz_pca_var(fpkmLnAjPCA2,geom = c("point", "text") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(2, 3))
-# PCAdecomp23 <- fviz_pca_var(fpkmLnAjPCA2,geom = c("point", "text") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(2, 3))
-# ggsave("PSPCA23Decomp.png", PCAdecomp23, dpi = 125, width = 7, height = 7)
-# PCAdecomp23nt <- fviz_pca_var(fpkmLnAjPCA2,geom = c("point") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(2, 3))
-# PCAdecomp23nt
-# ggsave("PSPCA23Decompnt.png", PCAdecomp23nt, dpi = 125, width = 7, height = 7)
-# PCAdecomp12nt <- fviz_pca_var(fpkmLnAjPCA2,geom = c("point") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(1, 2))
-# PCAdecomp12nt
-# ggsave("PSPCA12Decompnt.png", PCAdecomp23nt, dpi = 125, width = 7, height = 7)
 
-
-# fpkmLnAjPCA2unscaled <- princomp(fpkmLenAdj, cor = F, scores = T)
-# PCAdecomp23unscaled <- fviz_pca_var(fpkmLnAjPCA2unscaled,geom = c("point", "text") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(2, 3))
-# PCAdecomp23unscaled
-# ggsave("PSPCA23Decompunscaled.png", PCAdecomp23unsclaed, dpi = 125, width = 7, height = 7)
-
-# fpkmLnAjPCA <- prcomp(fpkmLenAdj, center = F, scale = F)
-# fviz_pca_var(fpkmLnAjPCA,geom = c("point", "text") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(2, 3))
-
-# fpkmLnAjPCAscale <- prcomp(fpkmLenAdj, center = T, scale = T)
-# scaled23 <- fviz_pca_var(fpkmLnAjPCAscale,geom = c("point") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(2, 3))
-# ggsave("fpkmLnAdj23.png", scaled23, dpi = 125, width = 7, height = 7)
-# scaled24 <-
 fviz_pca_biplot(fpkmLnAdj, geom = c("point"), geom.var = c("point", "text"), axes = c(2, 4), alpha.ind = 0.01, repel = T)
 fviz_pca_var(fpkmLnAdj, geom = c("point"), habillage = factor(condition), var.size = 1,
              axes = c(2,4), rug = TRUE, mean.point = T)
 # fviz_pca_var(fpkmLnAdj, geom = c("point"), habillage = factor(condition), var.size = 0.1, mean.point.size = 3,
 #              axes = c(2,3), mean.point = T, rug = TRUE, xlim = c(-0.5,0.5))
 screeplot(fpkmLnAdj)
-# ggsave("fpkmLnAdj24.png", scaled23, dpi = 125, width = 7, height = 7)
-# scaled12 <- fviz_pca_var(fpkmLnAjPCAscale,geom = c("point") ,habillage = factor(condition),repel = T, col.var = "contrib", axes = c(1, 2))
-# ggsave("fpkmLnAdj12.png", scaled12, dpi = 125, width = 7, height = 7)
-# plotPCA(fpkmLnAjPCAscale)
-# ggbiplot(fpkmPCA,choices = c(2,3), alpha = 0.1)
-# ggbiplot(fpkmPCA2,choices = c(2,3), alpha = 0.1)
-# plot.PCA(FM_PCA)
-#
-# plot(fpkmPCA)
-# dat <- fpkmLenAdj %>% data.frame
-# pca1 <- PCA(dat)
-# dat$pc1 <- pca1$ind$coord[, 1]
-# dat$pc2 <- pca1$ind$coord[, 2]
-# dat$pc3 <- pca1$ind$coord[, 3]
-# dat$pc4 <- pca1$ind$coord[, 4]
-#
-# pca.vars <- pca1$var$coord %>% data.frame
-#
-# pca.vars$vars <- rownames(pca.vars)
-#
-# pca.vars.m <- melt(pca.vars, id.vars = "vars")
-# p <- ggplot(dat, aes(x = pc2, y = pc4)) +
-#   geom_point(alpha=0.2)
-# p
-# pca <- plotPCA(vsd, intgroup=c("condition"), returnData = T)
-# percentVar <- round(100 * attr(pca, "percentVar"))
-# ggplot(pca, aes(PC1, PC2, color = condition)) +
-#   geom_point(size = 3) +
-#   labs(x = paste0("PC1: ", percentVar[1], "% variance"),
-#        y = paste0("PC2: ", percentVar[2], "% variance")) +
-#   coord_fixed()
-#
-# fviz_pca_var(fpkmPCA,geom = c("point", "text") ,habillage = factor(condition),repel = F, col.var = "contrib", axes = c(2, 3))
-#
-# fviz_pca_var(fpkmPCA2,geom = c("point", "text") ,habillage = factor(condition),repel = F, col.var = "contrib", axes = c(2, 3))
+
 ##################CAITLIN'S METHOD################
 
 head(fpkmLenAdj)
@@ -1232,15 +1153,18 @@ exprVals_lab <- cbind(exprVals, labels_pos2neg4, labels_pos2pos4, labels_neg2neg
 library(ggrepel)
 library(shadowtext)
 pred.names <- scan("~/R/Eutrema/PS/crema/pcaLoading/pred.names", what = "character")
-
 filtName <- scan("~/R/Eutrema/PS/filter.name", what = "character")
+allGpredEq1 <- read.csv("~/R/Eutrema/PS/crema/allG/final_ensemble_predictions.csv", header = T, row.name = 1)
+allGlnc <- rownames(allGpredEq1[which(allGpredEq1$prediction == 1),])
 pcaSum <- as.data.frame(summary(pca)$importance)
 
 set.seed(51)
-meanplot <- (ggplot(exprVals, aes_string("PC2", "PC4")) +
+{meanplot <- (ggplot(exprVals, aes_string("PC2", "PC4")) +
     geom_point(shape=19, alpha=0.3) +
-    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Treatment), arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
-    geom_point(data = exprVals[which(toupper(rownames(exprVals)) %in% toupper(filtName)) ,], colour="darkcyan", size=2) +    
+    geom_point(data = exprVals[which(toupper(rownames(exprVals)) %in% toupper(allGlnc)) ,], 
+               colour="#9fcc2e", size=2, alpha = 0.5) +    
+    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Treatment), 
+                 arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
     #     plot.points(points, exprVals) +
     #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], colour="#2851b5", size=2) +
     #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], aes(PC2,PC4, label = "SDI1"), nudge_y = 0.07) +
@@ -1253,7 +1177,7 @@ meanplot <- (ggplot(exprVals, aes_string("PC2", "PC4")) +
   scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
     xlab(paste0("PC2 ", pcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ",pcaSum$PC4[2]*100,"%")) +
     coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)))
-meanplot
+meanplot}
 median
 # ggsave("PSMean.pdf", mean, dpi = 250, height = 6, width = 8)
 ggsave("~/R/Eutrema/PS/PSMeanPred.pdf", mean, dpi = 250, height = 6, width = 8)

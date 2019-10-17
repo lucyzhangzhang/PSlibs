@@ -2,7 +2,7 @@ library(dplyr)
 library(tibble)  # for `rownames <- to <- column` and `column <- to <- rownames`
 library(methods) # to make the S4 object
 
-wd  <- "~/R/Eutrema/PS/names"
+wd  <- "~/R/Eutrema/PS/crema/names"
 setwd(wd)
 
 # being compared to

@@ -19,10 +19,10 @@ PUE <- AraPUE$Gene[!is.na(AraPUE$Gene)]
 intersect(PHO, PUE)
 
 homologs <- function(listgenes, name = "ListGenes") {
-    write(listgenes, file = paste0(name, ".names", sep = "\n"))
+    write(unique(listgenes), file = paste0(name, ".names", sep = "\n"))
     return(blastres)
 }
-write(PHO, file = "PHO.ara.names", sep = "\n")
+write(unique(PHO), file = "PHO.ara.names", sep = "\n")
 
 EuAnnot <- read.csv("../FPKMS_LengthAdjusted.csv", header = T, row.names = 1)
 colnames(EuAnnot)[6:17] <- c(paste0("ps", c(1, 2, 3)),

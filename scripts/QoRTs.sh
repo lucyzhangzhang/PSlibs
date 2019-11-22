@@ -1,7 +1,6 @@
 #!/bin/bash
 #run Q0RTs
 #
-#
 # Usage: QoRTs.sh <2pass_loc> <out_dir>
 
 BAMDIR=$1

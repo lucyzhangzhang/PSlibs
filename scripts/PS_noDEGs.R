@@ -105,12 +105,14 @@ colnames(ps.filt) <- colnames(ps.mean)
 #     }        
 # }
 
-sets <- list(ps=rownames(ps.filt[which(ps.filt$ps != 0),]),
+sets <- list(ps=rownames(ps.filt[which(ps.filt$ps != 0),]), # 
              Ps=rownames(ps.filt[which(ps.filt$Ps != 0),]),
              pS=rownames(ps.filt[which(ps.filt$pS != 0),]),
              PS=rownames(ps.filt[which(ps.filt$PS != 0),]))
-pdf("PSIntersectBW.pdf", width = 5, height = 5)
-venn(sets)
+pdf("pics/PSIntersect.pdf", width = 5, height = 5) # 
+venn(sets, zcolor="style", cexil = 1, cexsn = 1.2)
+zeroset <- matrix(1000*c(0,1,1,0,0,0,0,1,1,0), ncol = 2)
+lines(zeroset, col='white', lwd=5)
 dev.off()
 
 psn <- rownames(ps.filt[which(ps.filt$ps != 0),])

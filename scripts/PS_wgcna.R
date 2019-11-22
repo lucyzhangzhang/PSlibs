@@ -392,12 +392,13 @@ geom_tile(aes(fill =value), colour="darkgrey") +
 scale_fill_gradient2(midpoint = 0, low = "#16316A", mid = "white", 
 high = "#61143F", na.value = "white", name = "Correlation", 
 limits=c(-1, 1), breaks=seq(-1,1,by=0.5)) +
-labs(x="Treatment") +  theme_bw() + theme(axis.text.y=element_text(angle=20,vjust=0.5), plot.margin = margin(0, 0, 0, 0, "cm"), legend.position = "bottom", 
+labs(x="Treatment") +  theme_bw() + theme(axis.text.y=element_blank(), plot.margin = margin(0, 0, 0, 0, "cm"), legend.position = "none", 
 axis.title.y = element_blank())
 heatmap5}
 
 heatmap6 <- heatmap4 + heatmap5 + plot_layout(nrow = 1)
-ggsave("wgcnaHeatmapTreatOnly.pdf", heatmap6, dpi = 300, height = 12, width = 7)
+heatmap6
+ggsave("pics/wgcnaHeatmapTreatOnly.pdf", heatmap6, dpi = 300, height = 7, width = 5)
 
 #extracting gene names
 library(xlsx)
@@ -418,7 +419,7 @@ write.xlsx2(GY, file = "PSLib_wgcna_clusters.xlsx", sheetName = "greenyellow", a
 # GO enrichment
 library(topGO)
 
-geneID2GO <- readMappings(file = "Drought.go", sep = "\t", IDsep = ";") 
+geneID2GO <- readMappings(file = "GO/Drought.go", sep = "\t", IDsep = ";") 
 allGenes <- rownames(fpkm.raw)
 
 fisherStat <- new("classicCount", testStatistic = GOFisherTest, name = "Fisher test")
@@ -474,7 +475,7 @@ goenrichment <- function(colour, clust = clustcolours,
     ID <- names(clust)[clust == colour]
     genes <- factor(as.integer(allGenes %in% ID))
     names(genes) <- allG
-
+print(genes)
     # TopGO objects
     GOdata <- new("topGOdata", ontology = "BP", allGenes = genes,
                   annot = annFUN.gene2GO, gene2GO = g2GO)

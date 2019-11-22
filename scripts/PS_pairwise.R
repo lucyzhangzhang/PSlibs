@@ -732,8 +732,12 @@ pos.PC <- exprVals[rownames(exprVals) %in% rownames(pos),]
 neg.PC <- exprVals[rownames(exprVals) %in% rownames(neg),]
 
 
-pos.combined <- as.data.frame(append(pos, list(PC2=pos.PC$PC2, PC4=pos.PC$PC4), after = 17))
-neg.combined <- as.data.frame(append(neg, list(PC2=neg.PC$PC2, PC4=neg.PC$PC4), after = 17))
+pos.combined <- as.data.frame(append(pos, 
+                                     list(PC2=pos.PC$PC2, PC4=pos.PC$PC4), 
+                                     after = 17))
+neg.combined <- as.data.frame(append(neg, 
+                                     list(PC2=neg.PC$PC2, PC4=neg.PC$PC4), 
+                                     after = 17))
 
 rownames(pos.combined) <- rownames(pos)
 rownames(neg.combined) <- rownames(neg)
@@ -743,5 +747,151 @@ neg.combined <- neg.combined[order(neg.combined$PC2, decreasing = T),]
 
 #write to excel file lmao
 
-write.xlsx2(pos.combined, file = "ScomparisonPCs.xlsx", sheetName = "plusS", append = F, row.names = T)
-write.xlsx2(neg.combined, file = "ScomparisonPCs.xlsx", sheetName = "minusS", append = T, row.names = T)
+write.xlsx2(pos.combined, file = "ScomparisonPCs.xlsx", 
+            sheetName = "plusS", append = F, row.names = T)
+write.xlsx2(neg.combined, file = "ScomparisonPCs.xlsx", 
+            sheetName = "minusS", append = T, row.names = T)
+
+
+######################################################################################
+# GO term semantic redundancy
+
+library(topGO)
+
+# load DEGs
+ wd <- "~/R/Eutrema/PS/GO/"
+setwd(wd)
+
+allGenes <- rownames(fpkm.raw)
+geneID2GO <- readMappings(file = "Drought.go", sep = "\t", IDsep = ";") 
+Sup <- scan("~/R/Eutrema/PS/crema/DEGs/HS/up/names", what = "character") 
+Sdn <- scan("~/R/Eutrema/PS/crema/DEGs/HS/dn/names", what = "character") 
+
+S <- c(Sup, Sdn)
+
+Sgenes <- factor(as.integer(allGenes %in% S)) 
+names(Sgenes) <- allGenes
+
+pipeLine <- function(genes, name = "topGO") {
+	fisherStat <- new("classicCount", testStatistic = GOFisherTest, 
+                          name = "Fisher test")
+	genefilter <- function(score){
+	    return(score == 1)
+	}
+	GOdat <- new("topGOdata",
+	             description = "DEGs",
+	             ontology = "BP",
+	             allGenes = genes,
+	             geneSel = genefilter,
+	             annot = annFUN.gene2GO, gene2GO = geneID2GO
+	)
+	
+	GOgenes <- topGO::genes(GOdat)
+	
+	resFtest <- getSigGroups(GOdat, fisherStat)
+	pvals <- score(resFtest)
+	pAdjust <- p.adjust(pvals, method = "fdr", n = length(pvals))
+	sigGenes <- pAdjust[which(pAdjust <= 0.05 )]
+	
+	res <- GenTable(GOdat, classic = resFtest, 
+                        topNodes = length(sigGenes))
+	
+	res <- merge(res, sigGenes, by.x = "GO.ID", by.y = 0)
+	    colnames(res)[7] <- "p.adj"
+	    write.table(res[,c(1,7)], file = paste0(name, ".tab", sep = ""),
+	                row.names = F, col.names = F,
+	                quote = F, sep = "\t")
+	
+	return(res)
+}
+
+pipeLine(Sgenes, name = "S")
+
+
+
+# Top GO all DEGs
+
+DEG.names <- scan("~/R/Eutrema/PS/crema/DEGs/allNames", what = "character")
+DEGs <- factor(as.integer(allGenes %in% DEG.names))
+names(DEGs) <- allGenes
+
+DEG.result <- pipeLine(DEGs, name = "DEG_GO")
+
+DEG.rev <- read.csv("DEG_rev.csv", header = T)
+
+DEG.rev <- as.data.frame(DEG.rev, StringsAsFactors = F)
+
+library(ggplot2)
+library(ggrepel)
+
+DEG.rev <- mutate(DEG.rev, semSim = 1-uniqueness)
+DEG.rev <- mutate(DEG.rev, Freq = as.numeric(gsub("%$", "", frequency))) 
+
+{GO.plot <- ggplot(DEG.rev, aes(x = log10.p.value, y = semSim)) +
+    labs(x = "log10 p-value", y = "GO Term semantic similarity") +
+    geom_vline(xintercept = log10(0.05), linetype = "dashed",
+               color = "grey") + 
+    geom_text(data = DEG.rev, mapping = aes(x = log10(0.05), y = 0, 
+                                            label = "log10(0.05)"), color = "red",
+              size = 2) + 
+    geom_point(color = "black", size = 1.8) +
+    geom_point(aes(color = semSim), size = 1.5) +
+    xlim(-30, 6) +
+    scale_color_gradientn(colors = rev(rainbow(8))) +
+    geom_label_repel(data = subset(DEG.rev,grepl("(.*stress(.*|$)| .*glu.*|.*nutr.*|.*sulf.*|.*starv.*|.*auxin.*|(.*|$)S-gly.*|.*phosp.*)", DEG.rev$description)),
+                     aes(x = log10.p.value, y = semSim,
+                         label = description), min.segment.length = unit(0, "lines"), 
+                     size = 2, segment.size = 0.2, alpha = 0.5, seed = 12) + 
+    geom_label_repel(data = subset(DEG.rev,grepl("(.*stress(.*|$)| .*glu.*|.*nutr.*|.*sulf.*|.*starv.*|.*auxin.*|(.*|$)S-gly.*|.*phosp.*)", DEG.rev$description)),
+                     aes(x = log10.p.value, y = semSim,
+                         label = description), min.segment.length = unit(0, "lines"), 
+                     size = 2, segment.size = 0.2, fill = NA, seed = 12) + 
+theme_bw()+
+theme(legend.position = "none", axis.text=element_text(size=12), axis.title=element_text(size=15))
+GO.plot}
+ggsave("../pics/goSemSim.pdf", GO.plot, dpi = 350, height = 4, width = 5.5)
+pdf("../pics/goSemSim.pdf", width = 6, height = 6)
+GO.plot
+dev.off()
+# all labels
+{GO.plot.all <- ggplot(DEG.rev, aes(x = log10.p.value, y = semSim)) +
+    labs(x = "log10 p-value", y = "GO Term semantic similarity") +
+    geom_vline(xintercept = log10(0.05), linetype = "dashed",
+               color = "grey") + 
+    geom_text(data = DEG.rev, mapping = aes(x = log10(0.05), y = 0, 
+                label = "log10(0.05)"), color = "red", size = 2) + 
+    xlim(-30, 5) + ylim(0, 0.5) +
+    geom_point(color = "black", size = 1.8) +
+    geom_point(aes(color = semSim), size = 1.5) +
+    scale_color_gradientn(colors = rev(rainbow(8))) +
+    geom_label_repel(data = DEG.rev,
+                     aes(x = log10.p.value, y = semSim,
+                         label = description), min.segment.length = unit(0, "lines"), 
+                     size = 2, segment.size = 0.2, alpha = 0.5, seed = 12) + 
+    geom_label_repel(data = DEG.rev,
+                     aes(x = log10.p.value, y = semSim,
+                         label = description), min.segment.length = unit(0, "lines"), 
+                     size = 2, segment.size = 0.2, fill = NA, seed = 12) + 
+    theme_bw()+ theme(legend.position = "none")
+GO.plot.all}
+ggsave("../pics/goSemSimAll.pdf", GO.plot.all, dpi = 350, height = 9, width = 14)
+
+annot <- read.csv("~/R/Eutrema/PS/FPKMS_LengthAdjusted.csv", header = T, row.names = 1)
+
+auxin1 <-topGO::genesInTerm(GOdat, "GO:0009850")
+auxin2 <-topGO::genesInTerm(GOdat, "GO:0009851")
+auxin3 <- union(unlist(auxin1), unlist(auxin2))
+auxin3 <- auxin3[which(auxin3 %in% DEG.names)]
+auxins <- annot[which(rownames(annot) %in% auxin3),c(1:18, 29)]
+colnames(auxins)[6:17] <- paste0(c("ps", "Ps", "pS", "PS"), 1:3)
+
+library(xlsx)
+library(openxlsx)
+
+write.xlsx2(auxins, file = "differentialAuxins.xlsx", sheetName = "auxins", append = F)
+sulfurs <- subset(DEG.rev, grepl(".*sulf.*", DEG.rev$description))
+sulf1 <- genesInTerm(GOdat, "GO:0006790")
+sulf2 <- genesInTerm(GOdat, "GO:0044272")
+S <- union(unlist(sulf1), unlist(sulf2))
+length(S[which(S %in% DEG.names)])
+

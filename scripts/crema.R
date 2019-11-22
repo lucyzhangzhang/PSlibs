@@ -2,7 +2,7 @@ library(dplyr)
 library(tibble)  # for `rownames <- to <- column` and `column <- to <- rownames`
 library(methods) # to make the S4 object
 
-wd  <- "~/R/Eutrema/PS/crema/names"
+wd  <- "~/R/Eutrema/PS/crema/DEGs"
 setwd(wd)
 
 # being compared to
@@ -13,6 +13,9 @@ Expr <- rep(c("up", "dn"), length(Denom)/2)
 Num <- rep(c("HL", "LH", "LL", "LH", "LL", "LL", ""), each = 2)
 Nlabel <- rep(c("Ps", "pS", "ps", "pS", "ps", "ps", "s"), each = 2)
 
+# Nlabel = Numerator
+# Dlabel = Denomenator
+# ^ terms used in DESeq2 log-fold change comparison function
 Meta <- data.frame(Dlabel = Dlabel, Expr = Expr, Nlabel = Nlabel)
 
 # add uniqe IDs
@@ -90,7 +93,7 @@ newPred <- function(Meta, annot) {
     return(out)
 }
 
-# generate a new prediction class object useing precious function
+# generate a new prediction class object using precious function
 pred <- suppressWarnings(newPred(Meta, expr.annot))
 
 # view annotations of all the predicted lncRNAs
@@ -101,25 +104,34 @@ for (i in 1:length(pred)) {
     predAnnots <- append(predAnnots, add)
 }
 
+# get prednames
+pNames <- c()
+for (bigList in 1:length(pred)) {
+    add <- rownames(pred[[bigList]]@predAnnot)
+    pNames <- c(pNames, add)
+}
+
+dNames <- pNames[grepl("DROUGHT.*|XLOC.*", pNames)]
+
 head(predAnnots)
 test <- data.frame(Genes="No predicted genes")
-library(xlsx)
-library(openxlsx)
-{lapply(names(predAnnots), function(name) if (is.na(predAnnots[[name]]) || (nrow(predAnnots[[name]]) == 0)) {
+# library(xlsx)
+# library(openxlsx)
+# {lapply(names(predAnnots), function(name) if (is.na(predAnnots[[name]]) || (nrow(predAnnots[[name]]) == 0)) {
+# 
+#            write.xlsx2(test, file = "predictions.xlsx",
+#                        sheetName = name, append = T)
+# 
+# } else if (which(names(predAnnots) == name) == 1) {
+#            write.xlsx2(data.frame(predAnnots[[name]]), file = "predictions.xlsx",  
+#                        sheetName = name, append = F)
+# 
+# } else {
+#            write.xlsx2(data.frame(predAnnots[[name]]), file = "predictions.xlsx", 
+#                        sheetName = name, append = T)}
+# )}
 
-           write.xlsx2(test, file = "predictions.xlsx",
-                       sheetName = name, append = T)
-
-} else if (which(names(predAnnots) == name) == 1) {
-           write.xlsx2(data.frame(predAnnots[[name]]), file = "predictions.xlsx",  
-                       sheetName = name, append = F)
-
-} else {
-           write.xlsx2(data.frame(predAnnots[[name]]), file = "predictions.xlsx", 
-                       sheetName = name, append = T)}
-)}
-
-{lapply(names(predAnnots), function(name) write.table(predAnnots[[name]], file = paste0(name, ".tab"), sep = ",", quote = T))}
+# {lapply(names(predAnnots), function(name) write.table(predAnnots[[name]], file = paste0(name, ".tab"), sep = ",", quote = T))}
 
 # for (name in names(predAnnots)) {
 #     write.xlsx2(predAnnots[[name]], file = "predictions.xlsx", sheetName = name, append = T)
@@ -156,28 +168,41 @@ pdat <- data.frame(ID="p.vs.P", Expr="up", variable="pred",
 data.melt <- rbind.data.frame(data.melt, pdat, stringsAsFactors = F) 
 
 # plotting
-plot <- {ggplot(data.melt, aes(ID, Genes, alpha = variable, fill = Expr)) + # 
+
+library(stringr)
+
+{plot <- ggplot(data.melt, aes(ID, Genes, alpha = variable, fill = Expr)) +  
     geom_bar(stat = "identity") + theme_bw() +
     labs(x = "Comparison", y = "Number of transcripts") +
-    scale_fill_discrete(name = "Expression", labels = c("Upregulated", "Downregulated"),
-                        breaks = c("up", "dn")) +
+    #     scale_fill_manual(values = c("#f54f31", "#1a8f10"), name = "Expression", labels = c("Upregulated", "Downregulated"),
+    #                       breaks = c("up", "dn")) +
+        #     scale_color_manual(values = c("#f54f31", "#1a8f10"), name = "Expression", labels = c("Upregulated", "Downregulated"),
+        #                       breaks = c("up", "dn")) +
+        scale_fill_manual(values = c("up"="#f54f31","dn"= "#1a8f10","upp"= "#fcb3a7", "dnp"="#b5d1b4"), name = "Expression", labels = str_wrap(c("Upregulated predicted lncRNA", "Downregulated predicted lncRNA", "Upregulated transcript", "Downregulated transcript"), 13),
+                          breaks = c("up", "dn", "upp", "dnp"), limits = c("up", "dn", "upp", "dnp")) +
 scale_x_discrete(breaks = data.melt$ID, labels = data.melt$Nlabel) + 
 facet_grid(. ~grouping, scales = "free_x", space = "free_x") + 
-scale_alpha_discrete(name = "Category", labels = c("Transcripts", "Predicted lncRNA"),
-                     range = c(0.3,1)) +
+scale_alpha_discrete(guide = F) +
+# scale_alpha_discrete(name = "Category", labels = c("Transcripts", "Predicted lncRNA"),
+#                      range = c(0.3,1)) +
 geom_text_repel(data = data.melt[data.melt$variable == "Genes", ], 
                 aes(x = ID, y = label, label = abs(Genes), color = Expr), 
           nudge_y = c(5, -5), alpha = 1, show.legend = F, seed = 7, point.padding = NA, direction = "y") +
+        scale_color_manual(values =c("#f54f31", "#1a8f10") ) +
 geom_text(data = data.melt[(data.melt$variable == "pred") & (data.melt$label != 0) & (data.melt$Genes > 0), ], 
           aes(x = ID, y = label, label = abs(Genes)), 
                  alpha = 1, show.legend = F, color = "black", nudge_y = 5) +
 geom_text(data = data.melt[(data.melt$variable == "pred") & (data.melt$label != 0) & (data.melt$Genes < 0), ], 
           aes(x = ID, y = label, label = abs(Genes)), 
                  alpha = 1, show.legend = F, color = "black", nudge_y = -5) +
-    theme(panel.spacing = unit(0, "lines"))}
-    plot
+# increase the length of the legend symbols
+    theme(panel.spacing = unit(0, "lines"), legend.key.height=unit(1.4, "cm"),
+    axis.title=element_text(size=15), axis.text=element_text(size=12), 
+    legend.text=element_text(size=12), legend.title=element_text(size=15))
+    plot}
 
-ggsave("predict.pdf", plot, dpi = 300, height = 7, width = 8)
+ggsave("~/R/Eutrema/PS/pics/predict.pdf", plot, dpi = 350, height = 7, width = 5)
+# ggsave("~/R/Eutrema/PS/pics/predict2.pdf", plot, dpi = 350, height = 7, width = 5)
 
 up <- data %>% filter(Expr == "up")
 dn <- data %>% filter(Expr == "dn") %>% mutate(Genes = Genes * -1, pred = pred * -1)
@@ -277,6 +302,7 @@ allGN <- union(union(psn, PSn), union(pSn, Psn))
 write(allGN, "~/R/Eutrema/PS/crema/allG/allG.names", sep = "\n")
 
 all.pred.result <- read.csv("~/R/Eutrema/PS/crema/allG/final_ensemble_predictions.csv", header = T, row.names = 1)
+
 allPredNames <- rownames(all.pred.result[which(all.pred.result$prediction == 1),])
 (allGP <- ggplot(exprVals, aes_string("PC2", "PC4")) +
     geom_point(shape=19, alpha=0.3) +
@@ -324,3 +350,8 @@ filtSubSubset <- filtExpr.subset[which(abs(filtExpr.subset$PC2) >= 0.08 | abs(fi
     coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)) )
 filtPCA
 ggsave("~/R/Eutrema/PS/PCAsubset.pdf", filtPCA, dpi = 250, height = 6, width = 8)
+
+allpredGenes <- all.pred.result[which(all.pred.result$prediction == 1),]
+allPredName <- allpredGenes[grepl("xloc.*|drought.*", rownames(allpredGenes)),]
+allPredName <- rownames(allPredName)
+length(allPredName)

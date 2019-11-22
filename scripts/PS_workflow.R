@@ -1,17 +1,17 @@
-library(DESeq2) #DEG analysis
-# library(plyr) #data manipulation
-# library(gplots) #graphing and visualization
-# library(RColorBrewer) #graphing and visualization
-library(genefilter) #GFF maker
-library(dplyr) #graphing
-library(geneplotter) #graphing
-library(ggplot2) #graphing
-library(GenomicFeatures) #GFF functions makeTxdbFromGff
-library(reshape2) #graphing
-library(apeglm) #better than ashr
-library(venn) #used for venn
-# library(VennDiagram) #used for venn
-library(topGO)  #used for GO enrichment (results not informative)
+library(DESeq2)                        #DEG analysis
+                                       # library(plyr) #data manipulation
+                                       # library(gplots) #graphing and visualization
+                                       # library(RColorBrewer) #graphing and visualization
+library(genefilter)                    #GFF maker
+library(dplyr)                         #graphing
+library(geneplotter)                   #graphing
+library(ggplot2)                       #graphing
+library(GenomicFeatures)               #GFF functions makeTxdbFromGff
+library(reshape2)                      #graphing
+library(apeglm)                        #better than ashr
+library(venn)                          #used for venn
+                                       # library(VennDiagram) #used for venn
+library(topGO)                         #used for GO enrichment (results not informative)
 # library(Rgraphviz)  #used for GO enrichment
 # library(pheatmap) #used for visualization of DESeq outputs
 
@@ -857,7 +857,7 @@ write.xlsx(n2p4, file = "mediantopPCA_loadings.xlsx", sheetName = "Neg2Pos4", ap
 write.xlsx(n2n4, file = "mediantopPCA_loadings.xlsx", sheetName = "Neg2Neg4", append = T)
 
 #########################GET MEANS PCA############################
-fpkm.val <- fpkm[,c(1:12)]
+fpkm.val <- fpkm[,c(1:12)]             # 
 
 ps <- fpkm.val[,1:3]
 Ps <- fpkm.val[,4:6]
@@ -1131,8 +1131,8 @@ neg2neg4_genes <- subset(neg2neg4_genes, select = -c(Row.names))
 # Write to excel #
 ##################
 
-pca_list <- list(neg2neg4_genes,  neg2pos4_genes, pos2neg4_genes, pos2pos4_genes)
-names(pca_list) = c("neg2neg4",  "neg2pos4", "pos2neg4", "pos2pos4")
+# pca_list <- list(neg2neg4_genes,  neg2pos4_genes, pos2neg4_genes, pos2pos4_genes)
+# names(pca_list) = c("neg2neg4",  "neg2pos4", "pos2neg4", "pos2pos4")
 #write.xlsx(pca_list, file = "pca_genelists_updated2.xlsx", rowNames=TRUE)
 #####
 ## Visualizing PCAs...
@@ -1152,17 +1152,18 @@ exprVals_lab <- cbind(exprVals, labels_pos2neg4, labels_pos2pos4, labels_neg2neg
 ### Labelling plot!
 library(ggrepel)
 library(shadowtext)
+library(extrafont)
+loadfonts()
 pred.names <- scan("~/R/Eutrema/PS/crema/pcaLoading/pred.names", what = "character")
 filtName <- scan("~/R/Eutrema/PS/filter.name", what = "character")
 allGpredEq1 <- read.csv("~/R/Eutrema/PS/crema/allG/final_ensemble_predictions.csv", header = T, row.name = 1)
 allGlnc <- rownames(allGpredEq1[which(allGpredEq1$prediction == 1),])
 pcaSum <- as.data.frame(summary(pca)$importance)
-
 set.seed(51)
-{meanplot <- (ggplot(exprVals, aes_string("PC2", "PC4")) +
+{meanplot <- ggplot(exprVals, aes_string("PC2", "PC4")) +
     geom_point(shape=19, alpha=0.3) +
     geom_point(data = exprVals[which(toupper(rownames(exprVals)) %in% toupper(allGlnc)) ,], 
-               colour="#9fcc2e", size=2, alpha = 0.5) +    
+               colour="#9fcc2e", size=2, alpha = 0.7) +    
     geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Treatment), 
                  arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
     #     plot.points(points, exprVals) +
@@ -1176,13 +1177,52 @@ set.seed(51)
     #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10005068m.g" ,], aes(PC2,PC4, label = "Rhodanese"), nudge_y = 0.07) +
   scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
     xlab(paste0("PC2 ", pcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ",pcaSum$PC4[2]*100,"%")) +
-    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)))
+    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5))+
+theme(axis.title=element_text(size=15), legend.text=element_text(size=12),
+axis.text=element_text(size=12))
 meanplot}
 median
 # ggsave("PSMean.pdf", mean, dpi = 250, height = 6, width = 8)
-ggsave("~/R/Eutrema/PS/PSMeanPred.pdf", mean, dpi = 250, height = 6, width = 8)
-ggsave("~/R/Eutrema/PS/PSMeanPred.pdf", meanplot, dpi = 250, height = 6, width = 8)
+# ggsave("~/R/Eutrema/PS/pics/PSMeanPred.pdf", mean, dpi = 250, height = 6, width = 8)
+ggsave("~/R/Eutrema/PS/pics/PSMeanPred.pdf", meanplot, dpi = 450, height = 4, width = 5) 
+# anti aliasing of Cairo type image raster
+# ggsave("~/R/Eutrema/PS/pics/PSMeanPred.png", meanplot, dpi = 450, height = 4, width = 5, type="cairo") 
 write.xlsx(p2n4, file = "meantopPCA_loadings.xlsx", sheetName = "Pos2Neg4", append = F)
 write.xlsx(p2p4, file = "meantopPCA_loadings.xlsx", sheetName = "Pos2Pos4", append = T)
 write.xlsx(n2p4, file = "meantopPCA_loadings.xlsx", sheetName = "Neg2Pos4", append = T)
 write.xlsx(n2n4, file = "meantopPCA_loadings.xlsx", sheetName = "Neg2Neg4", append = T)
+
+###################################################
+lncRNA tree
+
+psMean <- as.data.frame(ps_mean, StringsAsFactors = F)
+psPred <- psMean[psMean$ps != 0,]
+psPred <- rownames(psPred[which(toupper(rownames(psPred)) %in% toupper(allGlnc)),])
+PsPred <- psMean[psMean$ps != 0,]
+PsPred <- rownames(PsPred[which(toupper(rownames(PsPred)) %in% toupper(allGlnc)),])
+pSPred <- psMean[psMean$ps != 0,]
+pSPred <- rownames(pSPred[which(toupper(rownames(pSPred)) %in% toupper(allGlnc)),])
+PSPred <- psMean[psMean$ps != 0,]
+PSPred <- rownames(PSPred[which(toupper(rownames(PSPred)) %in% toupper(allGlnc)),])
+
+predSet <- list(ps=psPred, pS=pSPred, Ps=PsPred, PS=PSPred)
+
+pdf("pics/lncVenn.pdf", width = 5, height = 5)
+venn(predSet, zcolor = "style")
+dev.off()
+
+
+# DEG lncRNA
+# lists = r-binded
+
+lncPs <- res.Ps[!is.na(res.Ps$padj),]
+lncPs <- lncPs[lncPs$padj <=0.05,]
+lncPs <- lncPs[which(toupper(rownames(lncPs)) %in% toupper(allGlnc)),]
+lncpS <- res.pS[!is.na(res.Ps$padj),]
+lncpS <- lncpS[lncpS$padj <=0.05,]
+lncPs <- lncPs[which(toupper(rownames(lncPs)) %in% toupper(allGlnc)),]
+lncps <- res.ps[!is.na(res.Ps$padj),]
+lncps <- lncps[lncps$padj <=0.05,]
+lncPs <- lncPs[which(toupper(rownames(lncPs)) %in% toupper(allGlnc)),]
+
+lncDEG <- list(lncPs=lncPs, lncpS=lncpS, lncps=lncps)

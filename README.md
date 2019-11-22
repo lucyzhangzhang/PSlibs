@@ -114,7 +114,7 @@ See: [*Arabidopsis* QTL mapping paper](https://bmcplantbiol.biomedcentral.com/ar
 See if these QTLs (in supp file 4 of the paper), particularly the PHO and PUE group are found in *Eutrema* Yukon and if their expression levels remark anything interesting.
 
 * Use Phytozome/Phytomine Python API to get homolog genes and sequences (really powerful tool)
-* [R script](./scripts/PS_QTL.R) calls the [Python script](./scripts/phytozomeQTL/py) which queries Phytozome through the Phytomine API
+* [R script](./scripts/PS_QTL.R) calls the [Python script](./scripts/phytozomeQTL.py) which queries Phytozome through the Phytomine API
 
 Three common genes mapped in these two QTL groups
 

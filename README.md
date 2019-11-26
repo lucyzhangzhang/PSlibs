@@ -6,15 +6,18 @@ Here is the documentation of my methods for processing the Pi-S treatment librar
 
 ```
 # Raw reads
-cd /2/scratch/lucy/PS/reads
+cd /home/lucy/R/Eutrema/PS/PS/reads
 
 # Trimmed reads
-cd /2/scratch/lucy/PS/trimmed
+cd /home/lucy/R/Eutrema/PS/PS/trimmed
+
+# Read counts
+cd /home/lucy/R/Eutrema/PS/QoRTs
 ```
 
 ## Attempt to find novel transcripts
 ```
-cd /2/scratch/lucy/PS/StringTIe
+cd /home/lucy/R/Eutrema/PS/StringTIe
 ```
 There were many novel transcripts almost all of which overlap with already annotated transcripts and differ by a could of base-pairs. In fact, some of the annotated `DROUGHT` transcripts also overlap with the `Thhalv`s, eventually one should look through the annotation file and remove the overlapping `DROUGHT` transcripts.
 
@@ -115,6 +118,8 @@ See if these QTLs (in supp file 4 of the paper), particularly the PHO and PUE gr
 
 * Use Phytozome/Phytomine Python API to get homolog genes and sequences (really powerful tool)
 * [R script](./scripts/PS_QTL.R) calls the [Python script](./scripts/phytozomeQTL.py) which queries Phytozome through the Phytomine API
+* For genes with no match in *Arabidopsis*, extract the transcript sequence and run BLAST in *Eutrema* transcriptome
+* Try to annotate those transcripts
 
 Three common genes mapped in these two QTL groups
 
@@ -123,4 +128,18 @@ intersect(PHO, PUE)
 
   [1] "AT1G24020" "AT1G47970" "AT1G47980"
 ```
+#### QTL groupings
 
+The number of matches may exceed mismatches because one *Arabidopsis* gene may match to multiple *Eutrema* genes.
+
+QTL Group| *Arabidopsis* |*Eutrema* Matched|*Eutrema* BLAST| No match 
+---------|--------------:|----------------:|--------------:|---------:
+ PHO     | 25            | 18              | 3             | 5        
+ PUE     | 43            | 15              | 5             | 4     
+ SUL     | 26            | 22              | 3             | 3         
+ IP6     | 18            | 17              | 1             | 1        
+
+**PUE** - Phosphate use efficiency
+**PHO** - Leaf phosphate content
+**SUL** - Leaf sulfate content
+**IP6** - Leaf phytate content

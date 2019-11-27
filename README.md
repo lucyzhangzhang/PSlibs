@@ -120,6 +120,7 @@ See if these QTLs (in supp file 4 of the paper), particularly the PHO and PUE gr
 * [R script](./scripts/PS_QTL.R) calls the [Python script](./scripts/phytozomeQTL.py) which queries Phytozome through the Phytomine API
 * For genes with no match in *Arabidopsis*, extract the transcript sequence and run BLAST in *Eutrema* transcriptome
 * Try to annotate those transcripts
+* Then we determine the expression levels of these transcripts in the RNA-Seq libraries
 
 Three common genes mapped in these two QTL groups
 
@@ -128,18 +129,18 @@ intersect(PHO, PUE)
 
   [1] "AT1G24020" "AT1G47970" "AT1G47980"
 ```
-#### QTL groupings
+### QTL groupings
 
 The number of matches may exceed mismatches because one *Arabidopsis* gene may match to multiple *Eutrema* genes.
 
-QTL Group| *Arabidopsis* |*Eutrema* Matched|*Eutrema* BLAST| No match 
+QTL Group| *Arabidopsis* |*Eutrema* matched|*Eutrema* BLAST| No match 
 ---------|--------------:|----------------:|--------------:|---------:
  PHO     | 25            | 18              | 3             | 5        
  PUE     | 43            | 15              | 5             | 4     
  SUL     | 26            | 22              | 3             | 3         
  IP6     | 18            | 17              | 1             | 1        
 
-**PUE** - Phosphate use efficiency
-**PHO** - Leaf phosphate content
-**SUL** - Leaf sulfate content
-**IP6** - Leaf phytate content
+**PUE** - Phosphate use efficiency;
+**PHO** - Leaf phosphate content;
+**SUL** - Leaf sulfate content;
+**IP6** - Leaf phytate content;

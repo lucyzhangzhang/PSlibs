@@ -136,7 +136,7 @@ The number of matches may exceed mismatches because one *Arabidopsis* gene may m
 QTL Group| *Arabidopsis* |*Eutrema* matched|*Eutrema* BLAST| No match 
 ---------|--------------:|----------------:|--------------:|---------:
  PHO     | 25            | 18              | 3             | 5        
- PUE     | 43            | 15              | 5             | 4     
+ PUE     | 44            | 15              | 5             | 4     
  SUL     | 26            | 22              | 3             | 3         
  IP6     | 18            | 17              | 1             | 1        
 

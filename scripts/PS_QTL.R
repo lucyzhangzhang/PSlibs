@@ -100,8 +100,7 @@ heatplot <- function(name, res) {
         scale_fill_gradient(low = "yellow", high = "red3") +
         theme(axis.title.x = element_blank(),
               axis.title.y = element_blank(),
-              axis.text.x = element_text(angle = 45, hjust = 1),
-              legend.position = "none")
+              axis.text.x = element_text(angle = 45, hjust = 1))
 }
 
 QTLgroups <- c("PHO", "PUE", "SUL", "IP6")
@@ -114,10 +113,57 @@ library(grid)
 library(cowplot)
 library(gridExtra)
 
-plotted <- plot_grid(plotlist = plots, ncol = 2, align = "v")
-plotted <- grid.arrange(arrangeGrob(plotted, left = textGrob("Gene", rot = 90),
-                                    bottom = textGrob("Condition")))
-
 # adding a legend grob by itself
 # https://stackoverflow.com/questions/13649473/add-a-common-legend-for-combined-ggplots
 
+# g_legend<-function(a.gplot){
+#   tmp <- ggplot_gtable(ggplot_build(a.gplot))
+#   leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+#   legend <- tmp$grobs[[leg]]
+#   return(legend)}
+
+# mylegend <- g_legend(PHOplot)
+
+plotted <- plot_grid(plotlist = plots, ncol = 2, align = "v")
+
+
+pdf("QTLheatmaps.pdf", width = 14, height = 10)
+plotted <- grid.arrange(arrangeGrob(plotted, left = textGrob("Gene", rot = 90),
+                                    bottom = textGrob("Condition")))
+plotted
+dev.off()
+
+binder <- function(name, res, Ara, App = F, excelName = "output.xslx") {
+    links <- rbind(res$matches[,1:2], res$blast[,1:2])
+    resSubset <- Ara[match(links[,1], Ara$Gene),]
+    resSubset <- resSubset[,8]
+    bound <- cbind(links, resSubset)
+    colnames(bound) <- c("Arabidopsis", "Eutrema", "Description")
+    write.xlsx2(bound, excelName, row.names = F, sheetName = name, append = App)
+}
+
+AraList <- list(AraPHO, AraPUE, AraSUL, AraIP6)
+
+for (i in 1:length(QTLgroups)) {
+    if (i == 1) {
+        App <- F
+    } else {
+        App <- T
+    }
+    binder(QTLgroups[i], resList[[i]], AraList[[i]], App = App, excelName = "QTLs.xlsx")
+}
+
+# unmatched Arabidopsis entries
+
+for (i in 1:length(QTLgroups)) {
+    if (i == 1) {
+        App <- F
+    } else {
+        App <- T
+    }
+    unmatched <- resList[[i]]$unmatched
+    Ara <- AraList[[i]]
+    Out <- Ara[match(unmatched, Ara$Gene),]
+    write.xlsx2(Out, file = "UnmatchedQTL.xlsx", 
+                row.names = F, sheetName = QTLgroups[i], append = App)
+}

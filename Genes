@@ -1,39 +1,42 @@
-IPS	IPS1    nXLOC_008023
-IPS	IPS2    Thhalv10015137m.g
-PHO	PHO1    Thhalv10020107m.g
-PHO	PHO2    Thhalv10016214m.g
-PHT	PHT1;3    Thhalv10003182m.g
-PHT	PHT1;6    Thhalv10003190m.g
-PHT	PHT1;8    Thhalv10009424m.g
-PHT	PHT1;7    Thhalv10010274m.g
-PHT	PHT1;5    Thhalv10016483m.g
-PHT	PHT1;4    Thhalv10016497m.g
-PHT	PHT1;9    Thhalv10018375m.g
-PHT	PHT2;1    Thhalv10003891m.g
-PHT	PHT2;1    XLOC_021593
-PHT	PHT4;2  Thhalv10017818m.g
-PHR	PHR1-1  Thhalv10025330m.g
-PHR	PHR1-2	Thhalv10002005m.g
-RNS	RNS1    Thhalv10004863m.g
-WRK	WRKY75  Thhalv10014943m.g
-SDI	SDI1	Thhalv10004656m.g
-SQD	SQD1    Thhalv10025085m.g
-SQD	SQD2    Thhalv10013276m.g
-SUL	SULTR1;3  Thhalv10009756m.g
-SUL	SULTR1;2  Thhalv10018244m.g
-SPX	SPX1    Thhalv10014356m.g
-SPX	SPX2    Thhalv10016985m.g
-SPX	SPX3    Thhalv10023655m.g
-SPX	SPX4    Thhalv10014185m.g
-SUE	SUE	Thhalv10010703m.g
-PS3	PS3	Thhalv10010285m.g
-SIZ	SIZ1    Thhalv10012623m.g
-ZAT	ZAT6    Thhalv10014546m.g
-PHT	PHT1;3	Thhalv10003183m.g
-PHT	PHT1;3   Thhalv10003187m.g
-PHT	PHT1;3   Thhalv10003186m.g
-PHT	PHT1;3   Thhalv10003336m.g
-PHT	PHT1;3   Thhalv10003340m.g
-PHT	PHT1;3   Thhalv10003184m.g
-PHT	PHT5;1   Thhalv10023313m.g
-PHT	PHT5;3   Thhalv10024565m.g
+IPS	IPS1	nXLOC_008023	P signalling
+IPS	IPS2	Thhalv10015137m.g	P signalling
+PHO	PHO1	Thhalv10020107m.g	protein regulation
+PHO	PHO2	Thhalv10016214m.g	protein regulation
+PHT	PHT1;3	Thhalv10003182m.g	P transport
+PHT	PHT1;6	Thhalv10003190m.g	P transport
+PHT	PHT1;8	Thhalv10009424m.g	P transport
+PHT	PHT1;7	Thhalv10010274m.g	P transport
+PHT	PHT1;5	Thhalv10016483m.g	P transport
+PHT	PHT1;4	Thhalv10016497m.g	P transport
+PHT	PHT1;9	Thhalv10018375m.g	P transport
+PHT	PHT2;1	Thhalv10003891m.g	P transport
+PHT	PHT2;1	XLOC_021593	P transport
+PHT	PHT4;2	Thhalv10017818m.g	P transport
+PHR	PHR1-1	Thhalv10025330m.g	transcription factor
+PHR	PHR1-2	Thhalv10002005m.g	transcription factor
+RNS	RNS1	Thhalv10004863m.g	ribonuclease
+WRK	WRKY75	Thhalv10014943m.g	transcription factor
+SDI	SDI1	Thhalv10004656m.g 	S deficiency-induced
+SDI	SDI1	Thhalv10029521m.g 	S deficiency-induced
+SDI	SDI1	XLOC_021392	S deficiency-induced
+SDI	SDI2	Thhalv10029521m.g	S deficiency-induced
+SUL	SULTR1;3	Thhalv10009756m.g	S transport
+SUL	SULTR1;2	Thhalv10018244m.g	S transport
+SPX	SPX1	Thhalv10014356m.g 	P signalling
+SPX	SPX2	Thhalv10016985m.g 	P signalling
+SPX	SPX3	Thhalv10023655m.g 	P signalling
+SPX	SPX4	Thhalv10014185m.g 	P signalling
+SUE	SUE4	Thhalv10010703m.g	S deficiency-induced
+SUE	SUE3	Thhalv10011634m.g	S deficiency-induced
+PS3	PS3	Thhalv10010285m.g	P signalling
+SIZ	SIZ1	Thhalv10012623m.g	protein regulation
+ZAT	ZAT6	Thhalv10014546m.g	transcription factor
+PHT	PHT1;3	Thhalv10003183m.g	P transport
+PHT	PHT1;3	Thhalv10003187m.g	P transport
+PHT	PHT1;3	Thhalv10003186m.g	P transport
+PHT	PHT1;3	Thhalv10003336m.g	P transport
+PHT	PHT1;3	Thhalv10003340m.g	P transport
+PHT	PHT1;3	Thhalv10003184m.g	P transport
+PHT	PHT5;1	Thhalv10023313m.g	P transport
+PHT	PHT5;3	Thhalv10024565m.g	P transport
+CRE	CRE1	Thhalv10003561m.g	P signalling

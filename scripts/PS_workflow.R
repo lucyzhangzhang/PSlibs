@@ -65,8 +65,7 @@ DESeq2Table$condition <- relevel(DESeq2Table$condition, ref = "PS")
 dds <- DESeq(DESeq2Table)
 # res <- results(dds, pAdjustMethod = "BH")
 # res
-# rld <- rlogTransformation(dds, blind = F)
-# png("PCA_samples.png", height = 600, width = 1000, res = 125)
+# rld <- rlogTransformation(dds, blindmeanComparison.pdf", plotted, dpi = 250, height = 14, width = 22) png("PCA_samples.png", height = 600, width = 1000, res = 125)
 # plotPCA.san(rld, intgroup=c("condition"))
 # dev.off()
 # vsd <- vst(dds, blind = F)
@@ -316,15 +315,6 @@ rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] > 0),])
 rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] < 0),])
 
 
-# rownames(res1_2[which(res1_2[,"padj"] < 0.2 & res1_2[,"log2FoldChange"] > 0),])
-# rownames(res1_2[which(res1_2[,"padj"] < 0.2 & res1_2[,"log2FoldChange"] < 0),])
-# rownames(res1_3[which(res1_3[,"padj"] < 0.2 & res1_3[,"log2FoldChange"] > 0),])
-# rownames(res1_3[which(res1_3[,"padj"] < 0.2 & res1_3[,"log2FoldChange"] < 0),])
-# rownames(res1_4[which(res1_4[,"padj"] < 0.2 & res1_4[,"log2FoldChange"] > 0),])
-# rownames(res1_4[which(res1_4[,"padj"] < 0.2 & res1_4[,"log2FoldChange"] < 0),])
-# rownames(res1_F[which(res1_F[,"padj"] < 0.2 & res1_F[,"log2FoldChange"] > 0),])
-# rownames(res1_F[which(res1_F[,"padj"] < 0.05 & res1_F[,"log2FoldChange"] < 0),])
-
 liPs <- (res1_2[which(res1_2[,"padj"] < 0.05),])
 lipS <- (res1_3[which(res1_3[,"padj"] < 0.05),])
 lips <- (res1_4[which(res1_4[,"padj"] < 0.05),])
@@ -335,13 +325,6 @@ lips
 liF
 
 #############################FPKM#######################
-myGTF <- read.table("~/R/Eutrema/PS/drought.gtf")
-myGTF <- myGTF[,-c(9, 11, 12, 14)]
-colnames(myGTF) <- c("seqname", "source", "feature", "start", "end", "score", "strand", "frame", "geneID", "transcriptID")
-myGTF <- mutate(myGTF, length = abs(myGTF$start - myGTF$end))
-myGTF <- myGTF %>% filter( grepl("transcript", feature)) %>% arrange(geneID)
-head(myGTF)
-
 GTF2 <- makeTxDbFromGFF("~/R/Eutrema/PS/drought.gtf", format = "gtf")
 
 GTF2 <- exonsBy(GTF2, by = "gene")
@@ -370,10 +353,10 @@ getFPKMs <- function(i) {
   diffDP2 <- as.data.frame(diffDP2)
   return(diffDP2)
 }
-for (i in 1:length(lists)) {
-fpkmdf <-  getFPKMs(lists[[i]])
-  write.table(data.frame("Gene" = rownames(fpkmdf), fpkmdf), file = paste0("diff", names(lists)[i], ".tab"), quote = F, row.names = F, sep = "\t")
-}
+# for (i in 1:length(lists)) {
+# fpkmdf <-  getFPKMs(lists[[i]])
+#   write.table(data.frame("Gene" = rownames(fpkmdf), fpkmdf), file = paste0("diff", names(lists)[i], ".tab"), quote = F, row.names = F, sep = "\t")
+# }
 
 ######################FPKM median length#################
 lenMedian <- median(lens)
@@ -383,7 +366,7 @@ fpkmLenAdj <- fpkm(ddsLenAdj, robust = T)
 head(fpkmLenAdj)
 fpkmLenAdj[row.names(fpkmLenAdj) %in% "nXLOC_008023", ]
 colnames(fpkmLenAdj) <- c("ps1", "ps2", "ps3", "Ps1", "Ps2", "Ps3", "pS1", "pS2", "pS3", "PS1", "PS2", "PS3")
-write.table(data.frame("Gene" = rownames(fpkmLenAdj), fpkmLenAdj), file = "FPKMS_LengthAdjusted2.tab", quote = F, row.names = F, sep = "\t")
+# write.table(data.frame("Gene" = rownames(fpkmLenAdj), fpkmLenAdj), file = "FPKMS_LengthAdjusted2.tab", quote = F, row.names = F, sep = "\t")
 ###############PHEATMAP#############
 ntd <- normTransform(dds)
 select <- order(rowMeans(counts(dds,normalized=TRUE)),
@@ -465,373 +448,21 @@ ggsave("vst-pcoaS.png", pocaS, height = 4, width = 6, dpi = 125)
 
 
 ##################PCA#################
-#median lengths adjusted FPKMs
-fpkmlog <- log2(fpkmLenAdj+1)
-fpkmLnAdj <- prcomp(fpkmlog, center = T, scale = T)
-
-fviz_pca_biplot(fpkmLnAdj, geom = c("point"), geom.var = c("point", "text"), axes = c(2, 4), alpha.ind = 0.01, repel = T)
-fviz_pca_var(fpkmLnAdj, geom = c("point"), habillage = factor(condition), var.size = 1,
-             axes = c(2,4), rug = TRUE, mean.point = T)
-# fviz_pca_var(fpkmLnAdj, geom = c("point"), habillage = factor(condition), var.size = 0.1, mean.point.size = 3,
-#              axes = c(2,3), mean.point = T, rug = TRUE, xlim = c(-0.5,0.5))
-screeplot(fpkmLnAdj)
-
-##################CAITLIN'S METHOD################
-
-head(fpkmLenAdj)
-dim(fpkmLenAdj)
-fpkmLA_log <- log2(fpkmLenAdj+1)
-
-pcalog <- prcomp(t(fpkmLA_log), center = T, scale = T)
-
-plot(pcalog, type = "l")
-x.var <- pcalog$sdev^2
-x.pvar <- x.var/sum(x.var)
-
-plot(x.pvar,xlab="Principal component", ylab="Proportion of variance explained", ylim=c(0,1), type='b')
-
-summary(pcalog)
-screeplot(pcalog)
-fviz_screeplot(pcalog)
-fviz_pca_ind(pcalog, habillage = factor(condition), addEllipses = TRUE, ellipse.type = "confidence", axes = c(4, 3))
-# var_habillage <- sapply(r1_4$lfc, function(x){ifelse(abs(x) >= 1, "Differential", "Normal")})
-# fviz_pca_var(pcalog, geom = "point", alpha = 0.75) #uhhhh...
-confplot <- fviz_pca_biplot(pcalog, geom.var = "pooint", axes = c(2, 4), habillage = factor(condition), addEllipses = T,ellipse.type = "confidence")
-confplot
-ggsave("PS_fpkmMeanPlot.png", confplot, dpi = 125, width = 10, height = 7)
-
-
-pcalog2 <- prcomp(fpkmLA_log, center = T, scale = T)
-
-plot(pcalog2, type = "l")
-x.var <- pcalog2$sdev^2
-x.pvar <- x.var/sum(x.var)
-
-plot(x.pvar,xlab="Principal component", ylab="Proportion of variance explained", ylim=c(0,1), type='b')
-
-summary(pcalog2)
-screeplot(pcalog2)
-fviz_screeplot(pcalog2)
-fviz_pca_ind(pcalog2, addEllipses = TRUE, ellipse.type = "confidence")
-var_habillage <- sapply(r1_4$lfc, function(x){ifelse(abs(x) >= 1, "Differential", "Normal")})
-fviz_pca_var(pcalog2, geom = "point", alpha = 0.75)
-confplot <- fviz_pca_biplot(pcalog2, alpha.ind = 0.1, geom.ind = "pooint", geom.var = c("point", "text"),
-                            axes = c(2, 4), addEllipses = T,ellipse.type = "confidence",
-                            repel = T, col.var = "#043d09", col.ind = rep(c("#d4d8c5", "#d4d8c5", "#d4d8c5", "#d4d8c5"), each = 3),
-                            addEllipses = T, ellipse.type = "confidence") +
-  xlim(-1.1,1.1) + ylim(-1.1,1.1)
-confplot
-
-var_plot <- fviz_pca_var(pcalog2, geom = "point", mean.point = T, alpha = 0.75, habillage = factor(condition), axes = c(2, 4),
-                         addEllipses = T, ellipse.type = "confidence", title = "Variables PCA, 95% confidence") +
-  xlim(-0.5,0.5) + ylim(-0.5,0.5)
-var_plot
-
-#############with normal non-adjusted fpkms#################3
-head(fpkms2)
-dim(fpkms2)
-fpkmLog <- log2(fpkms2+1)
-
-pcaFP <- prcomp(fpkmLog, center = T, scale = T)
-fviz_screeplot(pcaFP)
-var_plot2 <- fviz_pca_var(pcaFP, geom = "point", mean.point = T, alpha = 0.75, habillage = factor(condition), axes = c(2, 3),
-                         addEllipses = T, ellipse.type = "confidence", title = "Variables PCA, 95% confidence") #+
-#  xlim(-0.5,0.5) + ylim(-0.5,0.5)
-var_plot2
-
-##################Another way of analizing the workflow########
+###   CAITLIN'S METHOD
 library(xlsx)
 ### PCA gene averages
 library(openxlsx)
 # setwd("~/scratch/PS/") #working directory goes here
 setwd("~/R/Eutrema/PS")
 #setwd("~/Documents/mcmaster/phd/rscripts/pca/pca_gene_avg/") # hard drive failure...getting scripts from Dropbox currently...please save this i guess??!?!?!
-fpkm <- read.table("~/R/Eutrema/PS/FPKMS_LengthAdjusted2.tab", row.names=1, header = T) #scp from McMaster cluster
+# fpkm <- read.table("~/R/Eutrema/PS/FPKMS_LengthAdjusted2.tab", row.names=1, header = T) #scp from McMaster cluster
+fpkm <- fpkms2
 head(fpkm)
-
-#drought <- fpkm[,c(13:28,44:45)]
-fpkm.val <- fpkm[,c(1:12)]
-
-ps <- fpkm.val[,1:3]
-Ps <- fpkm.val[,4:6]
-pS <- fpkm.val[,7:9]
-PS <- fpkm.val[,10:12]
-
-pS <- apply(pS, 1, median)
-Ps <- apply(Ps, 1, median)
-ps <- apply(ps, 1, median)
-PS <- apply(PS, 1, median)
-
-ps_med <- cbind(pS, Ps, ps, PS)
-
-ps.log <- log2(ps_med+1)
-## all genes
-pca<- prcomp(ps.log, center=TRUE, scale=TRUE)  # PCA with centering and scaling
-pca$rotation  # The loadings are here
-
-sdev <- pca$sdev
-
-screeplot(pca)
-#log.expr <- log2(expr+1)
-
-plot(pca, type = "l")
-summary(pca)
-exprVals<-data.frame(pca$x)
-sampleVals<-data.frame(pca$rotation)
-#rv <- rowVars(as.matrix(log.expr))
-#names(rv) <- rownames(expr)
-#select <- order(rv, decreasing = TRUE)[1:2000]
-#pca <- prcomp(log.expr[select,], .scale=TRUE, center=TRUE)
-
-dim(exprVals)
-dim(sampleVals)
-
-#using covariance
-ps.cov <- cov(ps.log)
-pca.cov <- prcomp(ps.cov, center=TRUE, scale=TRUE)  # PCA with centering and scaling
-pca.cov$rotation  # The loadings are here
-
-sdev <- pca.cov$sdev
-
-screeplot(pca.cov)
-#log.expr <- log2(expr+1)
-
-plot(pca.cov, type = "l")
-summary(pca.cov)
-exprVals<-data.frame(pca.cov$x)
-sampleVals<-data.frame(pca.cov$rotation)
-#rv <- rowVars(as.matrix(log.expr))
-#names(rv) <- rownames(expr)
-#select <- order(rv, decreasing = TRUE)[1:2000]
-#pca <- prcomp(log.expr[select,], .scale=TRUE, center=TRUE)
-
-dim(exprVals)
-dim(sampleVals)
-expr_annot <- read.csv("~/R/Eutrema/PS/FPKMS_LengthAdjusted.csv", row.names=1, header = T)
-FPKM <- read.table("~/R/Eutrema/PS/FPKMS_LengthAdjusted2.tab", header = T, row.names = 1)
-colnames(FPKM)  <- sampNames
-##################
-# Write to excel #
-##################
-
-pca_list <- list(neg2neg4_genes,  neg2pos4_genes, pos2neg4_genes, pos2pos4_genes)
-names(pca_list) = c("neg2neg4",  "neg2pos4", "pos2neg4", "pos2pos4")
-#write.xlsx(pca_list, file = "pca_genelists_updated2.xlsx", rowNames=TRUE)
-#####
-## Visualizing PCAs...
-
-#samples <-colnames(ps_med)
-samples <- c("pS", "Ps", "ps", "PS")
-coords <- data.frame(X=rep(0, 4), Y=rep(0, 4),sampleVals, Samples = samples)
-coords$Treatment <- factor(coords$Samples, c("pS", "Ps", "ps", "PS"))
-
-library(ggplot2)
-library(ggrepel)
-theme_set(theme_bw())
-exprVals
-labels_pos2neg4 <- ifelse(rownames(exprVals) %in% rownames(pos2neg4_58), "Yes", "No")
-labels_pos2pos4 <- ifelse(rownames(exprVals) %in% rownames(pos2pos4_58), "Yes", "No")
-labels_neg2neg4 <- ifelse(rownames(exprVals) %in% rownames(neg2neg4_58), "Yes", "No")
-exprVals_lab <- cbind(exprVals, labels_pos2neg4, labels_pos2pos4, labels_neg2neg4)
-
-### Labelling plot!
-#covariance matrix...is stupid don't do it
-#PC2, PC4 nothing good
-{ggplot(exprVals, aes(x = PC2, y = PC4))  + 
-    geom_segment(data = coords, aes(x = X, y = Y, xend = PC2, yend = PC4, color = Treatment), 
-                 arrow = arrow(), size = 1) +
-#    geom_point(data = pca$x, aes(x = PC2, y = PC4), shape=19, alpha=0.3) +
-    coord_cartesian(xlim = c(-1,1), ylim = c(-1,1))}
-
-#PC1, PC2 ... nothing good
-    {ggplot(exprVals, aes(x = PC1, y = PC2))  + 
-    geom_segment(data = coords, aes(x = X, y = Y, xend = PC1, yend = PC2, color = Treatment), 
-                 arrow = arrow(), size = 1) +
-    coord_cartesian(xlim = c(-1,1), ylim = c(-1,1))}
-
-#PC3, PC2 not responsive to low sulfur
-    {ggplot(exprVals, aes(x = PC3, y = PC2))  + 
-    geom_segment(data = coords, aes(x = X, y = Y, xend = PC3, yend = PC2, color = Treatment), 
-                 arrow = arrow(), size = 1) +
-    coord_cartesian(xlim = c(-1,1), ylim = c(-1,1))}
-
-#no covariance
-median <- (pc24plot_labelled <- ggplot(exprVals, aes(x = PC2, y = PC4)) +
-    geom_point(shape=19, alpha=0.3) +
-    geom_point(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], colour="red") +
-    geom_point(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], colour="red") +
-    # geom_point(data = exprVals[rownames(exprVals) == "XLOC_003912" ,], colour="red") +
-    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Treatment), arrow=arrow(), size=1) +
-    geom_text(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], aes(PC2,PC4, label = "SDI1"), vjust=1.5, colour="black") +
-    geom_text(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], aes(PC2,PC4, label = "IPS2"), hjust=1.5, colour="white") +
-    # geom_text(data = exprVals[rownames(exprVals) == "XLOC_003912" ,], aes(PC2,PC4, label = "XLOC"), vjust=-0.5, colour="white") +
-    xlab("PC2 (0.74%)") + ylab("PC4 (0.18%)") +
-    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)))
-median
-ggsave("PSMed.png", median, dpi = 100, height = 4, width = 6)
-#png("figs/pc24_labelled_recoloured.png", bg="transparent")
-#print(pc24plot_labelled)
-#dev.off()
-
-(pc24plot_pos2neg4lab <- ggplot(exprVals, aes_string("PC2", "PC4")) +
-    geom_point(shape=19, alpha=0.3) +
-    # geom_point(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], colour="red") +
-    # geom_point(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], colour="red") +
-    # geom_point(data = exprVals[rownames(exprVals) == "XLOC_003912" ,], colour="red") +
-    geom_point(data = exprVals_lab[exprVals_lab$labels_pos2neg4 == "Yes",], colour = "mediumpurple1", alpha = 0.5) +
-    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Samples), arrow=arrow(), size =1) +
-    # geom_text(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], aes(PC2,PC4, label = "SDI1"), vjust=-1, colour="black") +
-    # geom_text(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], aes(PC2,PC4, label = "At4"), vjust=1.5, colour="white") +
-    # geom_text(data = exprVals[rownames(exprVals) == "XLOC_003912" ,], aes(PC2,PC4, label = "XLOC"), vjust=-0.5, colour="white") +
-    xlab("PC2 (0.05%)") + ylab("PC4 (0.02%)") +
-    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)) +
-    scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
-    theme_set(theme_bw(base_size=16)))
-
-(pc24plot_pos2pos4lab <- ggplot(exprVals, aes_string("PC2", "PC4")) +
-    geom_point(shape=19, alpha=0.3) +
-    #  geom_point(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], colour="red") +
-    #  geom_point(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], colour="red") +
-    #  geom_point(data = exprVals[rownames(exprVals) == "XLOC_003912" ,], colour="red") +
-    geom_point(data = exprVals_lab[exprVals_lab$labels_pos2pos4 == "Yes",], colour = "mediumpurple1", alpha = 0.7) +
-    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Samples), arrow=arrow(), size=1) +
-    #  geom_text(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], aes(PC2,PC4, label = "SDI1"), vjust=-1, colour="black") +
-    #  geom_text(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], aes(PC2,PC4, label = "At4"), vjust=1.5, colour="white") +
-    #  geom_text(data = exprVals[rownames(exprVals) == "XLOC_003912" ,], aes(PC2,PC4, label = "XLOC"), vjust=-0.5, colour="white") +
-    xlab("PC2 (0.05%)") + ylab("PC4 (0.02%)") +
-    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)) +
-    scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
-    theme_set(theme_bw(base_size=16)))
-
-(pc24plot_neg2neg4lab <- ggplot(exprVals, aes_string("PC2", "PC4")) +
-    geom_point(shape=19, alpha=0.3) +
-    #  geom_point(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], colour="red") +
-    #  geom_point(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], colour="red") +
-    #  geom_point(data = exprVals[rownames(exprVals) == "XLOC_003912" ,], colour="red") +
-    geom_point(data = exprVals_lab[exprVals_lab$labels_neg2neg4 == "Yes",], colour = "mediumpurple1", alpha = 0.4) +
-    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Samples), arrow=arrow(), size=1) +
-    #  geom_text(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], aes(PC2,PC4, label = "SDI1"), vjust=-1, colour="black") +
-    #  geom_text(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], aes(PC2,PC4, label = "At4"), vjust=1.5, colour="white") +
-    #  geom_text(data = exprVals[rownames(exprVals) == "XLOC_003912" ,], aes(PC2,PC4, label = "XLOC"), vjust=-0.5, colour="white") +
-    xlab("PC2 (0.05%)") + ylab("PC4 (0.02%)") +
-    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)) +
-    scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
-    theme_set(theme_bw(base_size=16)))
-
-#ggsave("pos2pos4_labelled.pdf", pc24plot_pos2pos4lab)
-#ggsave("pos2neg4_labelled.pdf", pc24plot_pos2neg4lab)
-#ggsave("neg2neg4_labelled.pdf", pc24plot_neg2neg4lab)
-
-
-
-(pc24plot_recol <- ggplot(exprVals, aes_string("PC2", "PC4")) +
-    geom_point(shape=19, alpha=0.3) +
-    geom_point(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], colour="#3366FF", size=4) +
-    # geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Samples), arrow=arrow(), size=1) +
-    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Samples), arrow=arrow(), size=2) +
-    geom_point(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], colour="#3366FF", size=4) +
-    geom_text(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], aes(PC2,PC4, label = "SDI1"), vjust=-1, colour="black") +
-    geom_text(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], aes(PC2,PC4, label = "IPS2"), vjust=-1, colour="white") +
-    xlab("PC2 (0.05%)") + ylab("PC4 (0.02%)") +
-    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)) +
-    #scale_colour_manual(values=c("#fd8a19", "#fcfc35", "#f91301", "#febfcb"))
-    #scale_colour_manual(values=c( "#febfcb", "#fcfc35", "#f91301", "#fd8a19" ))
-    #scale_colour_manual(values=c( "coral2", "#fcfc35", "#f91301", "#fd8a19" ))
-    scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
-    theme_set(theme_bw(base_size=16)))
-#ggsave(pc24plot_recol, file="pc24_recoloured.pdf")
-
-pc24plot_nolab <- ggplot(exprVals, aes_string("PC2", "PC4")) +
-  geom_point(shape=19, alpha=0.3) +
-  # geom_point(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], colour="#3366FF", size=4) +
-  geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Samples), arrow=arrow(), size=2) +
-  #  geom_point(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], colour="#3366FF", size=4) +
-  #  geom_text(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], aes(PC2,PC4, label = "SDI1"), vjust=-1, colour="black") +
-  #  geom_text(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], aes(PC2,PC4, label = "IPS2"), vjust=-1, colour="white") +
-  xlab("PC2 (0.05%)") + ylab("PC4 (0.02%)") +
-  coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5)) +
-  #scale_colour_manual(values=c("#fd8a19", "#fcfc35", "#f91301", "#febfcb"))
-  #scale_colour_manual(values=c( "#febfcb", "#fcfc35", "#f91301", "#fd8a19" ))
-  #scale_colour_manual(values=c( "coral2", "#fcfc35", "#f91301", "#fd8a19" ))
-  scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
-  theme_set(theme_bw(base_size=16))
-pc24plot_nolab
-ggsave(pc24plot_nolab, file="pc24_recoloured_noLabels.pdf")
-
-
-## loop for all PC1 combinations
-#for (tryThis in 2:4){
-# toUse<-noquote(paste("PC", tryThis, sep=""))
-#fileName<-paste("figs/PC1",toUse, ".pdf",sep="")
-#pdf(fileName)
-# print(pc12plot <- ggplot(coords, aes_string("PC1", toUse)) +
-# geom_point(aes(color = Samples), size=5) +
-    #         geom_segment(data=coords, aes(x=X, y=Y, xend=PC1, yend=toUse, colour=Samples), arrow=arrow(), size=1))# +
-# coord_cartesian(xlim=c(-0.8,0.8), ylim=c(-0.8,0.8)))
-#dev.off()
-#}
-
-pc12plot <- ggplot(coords, aes_string("PC1", "PC2")) +
-  geom_segment(data=coords, aes(x=X, y=Y, xend=PC1, yend=PC2, colour=Samples), arrow=arrow(), size=1) +
-  coord_cartesian(xlim=c(-0.8,0.8), ylim=c(-0.8,0.8))
-pc12plot
-
-pc13plot <- ggplot(coords, aes_string("PC1", "PC3")) +
-  geom_segment(data=coords, aes(x=X, y=Y, xend=PC1, yend=PC3, colour=Samples), arrow=arrow(), size=1) +
-  coord_cartesian(xlim=c(-0.8,0.8), ylim=c(-0.8,0.8))
-pc13plot
-
-pc14plot <- ggplot(coords, aes_string("PC1", "PC4")) +
-  geom_segment(data=coords, aes(x=X, y=Y, xend=PC1, yend=PC4, colour=Samples), arrow=arrow(), size=1) +
-  coord_cartesian(xlim=c(-0.8,0.8), ylim=c(-0.8,0.8))
-pc14plot
-
-pc23plot <- ggplot(coords, aes_string("PC2", "PC3")) +
-  geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC3, colour=Samples), arrow=arrow(), size=1) +
-  coord_cartesian(xlim=c(-0.8,0.8), ylim=c(-0.8,0.8))
-pc23plot
-
-pc24plot <- ggplot(coords, aes_string("PC2", "PC4")) +
-  geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Samples), arrow=arrow(), size=1) +
-  coord_cartesian(xlim=c(-0.8,0.8), ylim=c(-0.8,0.8))
-pc24plot
-
-pc34plot <- ggplot(coords, aes_string("PC3", "PC4")) +
-  geom_segment(data=coords, aes(x=X, y=Y, xend=PC3, yend=PC4, colour=Samples), arrow=arrow(), size=1) +
-  coord_cartesian(xlim=c(-0.8,0.8), ylim=c(-0.8,0.8))
-
-#pdf("figs/PC1PC2.pdf")
-#print(pc12plot)
-#dev.off()
-#
-#pdf("figs/PC1PC3.pdf")
-#print(pc13plot)
-#dev.off()
-#
-#pdf("figs/PC1PC4.pdf")
-#print(pc14plot)
-#dev.off()
-#
-#pdf("figs/PC2PC3.pdf")
-#print(pc23plot)
-#dev.off()
-#
-#pdf("figs/PC2PC4.pdf")
-#print(pc24plot)
-#dev.off()
-#
-#pdf("figs/PC3PC4.pdf")
-#print(pc34plot)
-#dev.off()
-
-write.xlsx(p2n4, file = "mediantopPCA_loadings.xlsx", sheetName = "Pos2Neg4", append = F)
-write.xlsx(p2p4, file = "mediantopPCA_loadings.xlsx", sheetName = "Pos2Pos4", append = T)
-write.xlsx(n2p4, file = "mediantopPCA_loadings.xlsx", sheetName = "Neg2Pos4", append = T)
-write.xlsx(n2n4, file = "mediantopPCA_loadings.xlsx", sheetName = "Neg2Neg4", append = T)
 
 #########################GET MEANS PCA############################
 fpkm.val <- fpkm[,c(1:12)]             # 
 
+fpkm.val <- log2(fpkm.val + 1)
 ps <- fpkm.val[,1:3]
 Ps <- fpkm.val[,4:6]
 pS <- fpkm.val[,7:9]
@@ -844,7 +475,6 @@ PS <- (PS=rowMeans(PS))
 
 ps_mean <- cbind(ps, pS, Ps, PS)
 
-ps.log <- log2(ps_mean+1)
 
 ## all genes
 pca<- prcomp(ps.log, center=TRUE, scale=TRUE)  # PCA with centering and scaling
@@ -913,258 +543,124 @@ neg4_genes <- subset(neg4_genes, select = -c(Row.names))
 n4 <- cbind(neg4_fpkm, neg4_genes)
 n4 <- n4[order(n4$PC4, decreasing = T),]
 
-write.xlsx2(p2, file = "meanPCA_loadings.xlsx", sheetName = "Pos2", append = F, row.names = T)
-write.xlsx2(n2, file = "meanPCA_loadings.xlsx", sheetName = "Neg2", append = T, row.names = T)
-write.xlsx2(p4, file = "meanPCA_loadings.xlsx", sheetName = "Pos4", append = T, row.names = T)
-write.xlsx2(n4, file = "meanPCA_loadings.xlsx", sheetName = "Neg4", append = T, row.names = T)
-
-write(rownames(p2), "p2.names", sep = "\n")
-write(rownames(n2), "n2.names", sep = "\n")
-write(rownames(p4), "p4.names", sep = "\n")
-write(rownames(n4), "n4.names", sep = "\n")
-
-####################
-# Pos PC2, Neg PC4 #
-####################
-# top 50?
-pos2neg4 <- exprVals[which(exprVals[,2] > 0 & exprVals[,4] < 0), c(2,4)]
-
-#top loading in each
-pos2_200 <-pos2neg4[order(pos2neg4$PC2, decreasing=TRUE)[1:200],]
-neg4_200 <- pos2neg4[order(pos2neg4$PC4, decreasing = FALSE)[1:200],]
-
-#loading value
-pos2neg4_58 <- pos2_200[rownames(pos2_200) %in% rownames(neg4_200),]
-
-#fpkm values
-pos2neg4_fpkm <- FPKM[rownames(FPKM) %in% rownames(pos2neg4_58),]
-#annotation fields
-pos2neg4_genes <- expr_annot[rownames(expr_annot) %in% rownames(pos2neg4_58),]
-#pos2neg4_genes <- cbind(pos2neg4_58, pos2neg4_genes[,7:ncol(pos2neg4_genes)])
-pos2neg4_genes <- merge(pos2neg4_58, pos2neg4_genes[,18:ncol(pos2neg4_genes)], by=0)
-rownames(pos2neg4_genes) <- pos2neg4_genes$Row.names
-pos2neg4_genes <- subset(pos2neg4_genes, select = -c(Row.names))
-p2n4 <- cbind(pos2neg4_fpkm, pos2neg4_genes)
-#write.csv(pos2neg4_genes, file="pos2neg4_genes.csv")
-
-####################
-# Pos PC2, Pos PC4 #
-####################
-# top 200?
+# write.xlsx2(p2, file = "meanPCA_loadings.xlsx", sheetName = "Pos2", append = F, row.names = T)
+# write.xlsx2(n2, file = "meanPCA_loadings.xlsx", sheetName = "Neg2", append = T, row.names = T)
+# write.xlsx2(p4, file = "meanPCA_loadings.xlsx", sheetName = "Pos4", append = T, row.names = T)
+# write.xlsx2(n4, file = "meanPCA_loadings.xlsx", sheetName = "Neg4", append = T, row.names = T)
 # 
-pos2pos4 <- exprVals[which(exprVals[,2] > 0 & exprVals[,4] > 0), c(2,4)]
-
-#top loading in each
-pos2_200 <-pos2pos4[order(pos2pos4$PC2, decreasing=TRUE)[1:200],]
-pos4_200 <- pos2pos4[order(pos2pos4$PC4, decreasing = FALSE)[1:200],]
-
-#loading value
-pos2pos4_58 <- pos2_200[rownames(pos2_200) %in% rownames(pos4_200),]
-
-#fpkm values
-pos2pos4_fpkm <- FPKM[rownames(FPKM) %in% rownames(pos2pos4_58),]
-#annotation fields
-pos2pos4_genes <- expr_annot[rownames(expr_annot) %in% rownames(pos2pos4_58),]
-#pos2pos4_genes <- cbind(pos2pos4_58, pos2pos4_genes[,7:ncol(pos2pos4_genes)])
-pos2pos4_genes <- merge(pos2pos4_58, pos2pos4_genes[,18:ncol(pos2pos4_genes)], by=0)
-rownames(pos2pos4_genes) <- pos2pos4_genes$Row.names
-pos2pos4_genes <- subset(pos2pos4_genes, select = -c(Row.names))
-p2p4 <- cbind(pos2pos4_fpkm, pos2pos4_genes)
-# 
-# write.csv(pos2pos4_genes, file="pos2pos4_genes.csv")
-# ####################
-# # Neg PC2, Pos PC4 #
-# ####################
-# # top 200?
-# 
-neg2pos4 <- exprVals[which(exprVals[,2] < 0 & exprVals[,4] > 0), c(2,4)]
-
-#top loading in each
-neg2_200 <-neg2pos4[order(neg2pos4$PC2, decreasing=TRUE)[1:200],]
-pos4_200 <- neg2pos4[order(neg2pos4$PC4, decreasing = FALSE)[1:200],]
-
-#loading value
-neg2pos4_58 <- neg2_200[rownames(neg2_200) %in% rownames(pos4_200),]
-
-#fpkm values
-neg2pos4_fpkm <- FPKM[rownames(FPKM) %in% rownames(neg2pos4_58),]
-#annotation fields
-neg2pos4_genes <- expr_annot[rownames(expr_annot) %in% rownames(neg2pos4_58),]
-#neg2pos4_genes <- cbind(neg2pos4_58, neg2pos4_genes[,7:ncol(neg2pos4_genes)])
-neg2pos4_genes <- merge(neg2pos4_58, neg2pos4_genes[,18:ncol(neg2pos4_genes)], by=0)
-rownames(neg2pos4_genes) <- neg2pos4_genes$Row.names
-neg2pos4_genes <- subset(neg2pos4_genes, select = -c(Row.names))
-n2p4 <- cbind(neg2pos4_fpkm, neg2pos4_genes)
-# 
-# #write.csv(neg2pos4_genes, file="neg2pos4_genes.csv")
-# ####################
-# # Neg PC2, Neg PC4 #
-# ####################
-# # top 200?
-# 
-neg2neg4 <- exprVals[which(exprVals[,2] < 0 & exprVals[,4] < 0), c(2,4)]
-
-#top loading in each
-neg2_200 <-neg2neg4[order(neg2neg4$PC2, decreasing=TRUE)[1:200],]
-neg4_200 <- neg2neg4[order(neg2neg4$PC4, decreasing = FALSE)[1:200],]
-
-#loading value
-neg2neg4_58 <- neg2_200[rownames(neg2_200) %in% rownames(neg4_200),]
-
-#fpkm values
-neg2neg4_fpkm <- FPKM[rownames(FPKM) %in% rownames(neg2neg4_58),]
-#annotation fields
-neg2neg4_genes <- expr_annot[rownames(expr_annot) %in% rownames(neg2neg4_58),]
-#neg2neg4_genes <- cbind(neg2neg4_58, neg2neg4_genes[,7:ncol(neg2neg4_genes)])
-neg2neg4_genes <- merge(neg2neg4_58, neg2neg4_genes[,18:ncol(neg2neg4_genes)], by=0)
-rownames(neg2neg4_genes) <- neg2neg4_genes$Row.names
-neg2neg4_genes <- subset(neg2neg4_genes, select = -c(Row.names))
-n2n4 <- cbind(neg2neg4_fpkm, neg2neg4_genes)
-# 
-
-pos2neg4 <- exprVals[which(exprVals[,2] > 0 & exprVals[,4] < 0), c(2,4)]
-
-pos2_200 <-pos2neg4[order(pos2neg4$PC2, decreasing=TRUE)[1:200],]
-neg4_200 <- pos2neg4[order(pos2neg4$PC4, decreasing = FALSE)[1:200],]
-
-pos2neg4_58 <- pos2_200[rownames(pos2_200) %in% rownames(neg4_200),]
-#pos2neg4_58 <- neg4_200[na.omit(match(rownames(pos2_200), rownames(neg4_200))),] # locations in pos2_200
-#na.omit(match(rownames(pos2neg4_58), rownames(expr_annot)))
-#pos2neg4_genes <- expr_annot[na.omit(match(rownames(pos2neg4_58), rownames(expr_annot))),]
-pos2neg4_genes <- expr_annot[rownames(expr_annot) %in% rownames(pos2neg4_58),]
-#pos2neg4_genes <- cbind(pos2neg4_58, pos2neg4_genes[,7:ncol(pos2neg4_genes)])
-pos2neg4_genes <- merge(pos2neg4_58, pos2neg4_genes[,7:ncol(pos2neg4_genes)], by=0)
-rownames(pos2neg4_genes) <- pos2neg4_genes$Row.names
-pos2neg4_genes <- subset(pos2neg4_genes, select = -c(Row.names))
-#write.csv(pos2neg4_genes, file="pos2neg4_genes.csv")
-
-####################
-# Pos PC2, Pos PC4 #
-####################
-# top 50?
-
-pos2pos4 <- exprVals[which(exprVals[,2] > 0 & exprVals[,4] > 0), c(2,4)]
-
-pos2_200 <-pos2pos4[order(pos2pos4$PC2, decreasing=TRUE)[1:300],]
-pos4_200 <- pos2pos4[order(pos2pos4$PC4, decreasing = TRUE)[1:300],]
-#na.omit(match(rownames(pos2_200), rownames(neg4_200)))
-#pos2pos4_top <- pos2_200[na.omit(match(rownames(pos4_200), rownames(pos2_200))),] # 33
-pos2pos4_top <- pos2_200[rownames(pos2_200) %in% rownames(pos4_200),]
-pos2pos4_genes <- expr_annot[rownames(expr_annot) %in% rownames(pos2pos4_top),]
-#pos2pos4_genes <- cbind(pos2pos4_top, pos2pos4_genes[,7:ncol(pos2pos4_genes)])
-pos2pos4_genes <- merge(pos2pos4_top, pos2pos4_genes[,7:ncol(pos2pos4_genes)], by=0)
-rownames(pos2pos4_genes) <- pos2pos4_genes$Row.names
-pos2pos4_genes <- subset(pos2pos4_genes, select = -c(Row.names))
-
-write.csv(pos2pos4_genes, file="pos2pos4_genes.csv")
-####################
-# Neg PC2, Pos PC4 #
-####################
-# top 50?
-
-neg2pos4 <- exprVals[which(exprVals[,2] < 0 & exprVals[,4] > 0), c(2,4)]
-
-neg2_200 <-neg2pos4[order(neg2pos4$PC2, decreasing=FALSE)[1:200],]
-pos4_200 <- neg2pos4[order(neg2pos4$PC4, decreasing = TRUE)[1:200],]
-#na.omit(match(rownames(pos2_200), rownames(neg4_200)))
-#neg2pos4_top <- neg2_200[na.omit(match(rownames(pos4_200), rownames(neg2_200))),] # 78
-neg2pos4_top <- neg2_200[rownames(neg2_200) %in% rownames(pos4_200),]
-
-neg2pos4_genes <- expr_annot[rownames(expr_annot) %in% rownames(neg2pos4_top),]
-#neg2pos4_genes <- cbind(neg2pos4_top, neg2pos4_genes[,7:ncol(neg2pos4_genes)])
-neg2pos4_genes <- merge(neg2pos4_top, neg2pos4_genes[,7:ncol(neg2pos4_genes)], by=0)
-row.names(neg2pos4_genes) <- neg2pos4_genes$Row.names
-neg2pos4_genes <- subset(neg2pos4_genes, select = -c(Row.names))
-
-#write.csv(neg2pos4_genes, file="neg2pos4_genes.csv")
-####################
-# Neg PC2, Neg PC4 #
-####################
-# top 50?
-
-neg2neg4 <- exprVals[which(exprVals[,2] < 0 & exprVals[,4] < 0), c(2,4)]
-
-neg2_300 <-neg2neg4[order(neg2neg4$PC2, decreasing=FALSE)[1:300],]
-neg4_300 <- neg2neg4[order(neg2neg4$PC4, decreasing = FALSE)[1:300],]
-#na.omit(match(rownames(pos2_200), rownames(neg4_200)))
-#neg2neg4_top <- neg2_200[na.omit(match(rownames(neg4_200), rownames(neg2_200))),] # 78
-neg2neg4_top <- neg2_300[rownames(neg2_300) %in% rownames(neg4_300),]
-
-# neg2_200[rownames(neg2_200) %in% rownames(pos4_200),]
-neg2neg4_genes <- expr_annot[rownames(expr_annot) %in% rownames(neg2neg4_top),]
-#neg2neg4_genes <- cbind(neg2neg4_top, neg2neg4_genes[,7:ncol(neg2neg4_genes)])
-neg2neg4_genes <- merge(neg2neg4_top, neg2neg4_genes[,7:ncol(neg2neg4_genes)], by=0)
-row.names(neg2neg4_genes) <- neg2neg4_genes$Row.names
-neg2neg4_genes <- subset(neg2neg4_genes, select = -c(Row.names))
-
-
-#write.csv(neg2neg4_genes, file="neg2neg4_genes.csv")
-
-##################
-# Write to excel #
-##################
-
-# pca_list <- list(neg2neg4_genes,  neg2pos4_genes, pos2neg4_genes, pos2pos4_genes)
-# names(pca_list) = c("neg2neg4",  "neg2pos4", "pos2neg4", "pos2pos4")
-#write.xlsx(pca_list, file = "pca_genelists_updated2.xlsx", rowNames=TRUE)
-#####
-## Visualizing PCAs...
-
-#samples <-colnames(ps_med)
-samples <- c("ps", "pS", "Ps", "PS")
-coords <- data.frame(X=rep(0, 4), Y=rep(0, 4),sampleVals, Samples = samples)
-coords$Treatment <- factor(coords$Samples, c("ps", "pS", "Ps", "PS"))
-
-theme_set(theme_bw())
-
-labels_pos2neg4 <- ifelse(rownames(exprVals) %in% rownames(pos2neg4_58), "Yes", "No")
-labels_pos2pos4 <- ifelse(rownames(exprVals) %in% rownames(pos2pos4_top), "Yes", "No")
-labels_neg2neg4 <- ifelse(rownames(exprVals) %in% rownames(neg2neg4_top), "Yes", "No")
-exprVals_lab <- cbind(exprVals, labels_pos2neg4, labels_pos2pos4, labels_neg2neg4)
+# write(rownames(p2), "p2.names", sep = "\n")
+# write(rownames(n2), "n2.names", sep = "\n")
+# write(rownames(p4), "p4.names", sep = "\n")
+# write(rownames(n4), "n4.names", sep = "\n")
 
 ### Labelling plot!
 library(ggrepel)
 library(shadowtext)
-library(extrafont)
-loadfonts()
+library(stringr)
+
+# preidction lists
 pred.names <- scan("~/R/Eutrema/PS/crema/pcaLoading/pred.names", what = "character")
 filtName <- scan("~/R/Eutrema/PS/filter.name", what = "character")
 allGpredEq1 <- read.csv("~/R/Eutrema/PS/crema/allG/final_ensemble_predictions.csv", header = T, row.name = 1)
+
+coords <- data.frame(X=rep(0,4), Y=rep(0,4), sampleVals, Treatment=c("ps", "pS", "Ps", "PS"))
+araConvert <- read.table("~/Eutrema/FPKM/eutremaToArabidopsis.names")
+names(araConvert) <- c("Eutr", "AraT")
+araTr <- araConvert
+araTr <- araConvert[complete.cases(araConvert),]
+#araTr$Ara <- gsub("[:punct:]+\\d", "", araTr$AraT)
+araTr$Ara <- gsub("\\.[0-9]*", "", araTr$AraT)
+
+
+Sassim <- read.xlsx("~/R/Eutrema/Arabi2016/GSLandSassim.xlsx", sheet = 1)
+Sassim$Ara <- toupper(Sassim$Ara)
+Sassim <- data.frame(sapply(Sassim, str_trim))
+Sassim <- merge(Sassim, araTr, by = "Ara")
+# write.table(Sassim, file = "/home/lucy/R/Eutrema/MapMan/data/Sassim.txt", quote = T, sep = "\t")
+GSL <- read.xlsx("~/R/Eutrema/Arabi2016/GSLandSassim.xlsx", sheet = 2)
+GSL$Ara <- toupper(GSL$Ara)
+GSL <- data.frame(sapply(GSL, str_trim))
+GSL <- merge(GSL, araTr, by = "Ara")
+# write.table(GSL, "/home/lucy/R/Eutrema/MapMan/data/GSL.txt", quote = T, sep = "\t")
+
+exprVals$Type <- ifelse(rownames(exprVals) %in% GSL$Eutr, "GSL", ifelse(rownames(exprVals) %in% Sassim$Eutr, "S assimilation", "other"))
+exprVals$Type <- factor(exprVals$Type, levels = c("other", "GSL", "S assimilation"))
+rbindGS <- rbind(GSL, Sassim)
+exprVals <- merge(exprVals, rbindGS, all.x = T, by.x = 0, by.y = "Eutr")
+# rownames(exprVals) <- exprVals$Row.names
+
+exprVals <- exprVals[order(exprVals$Type),]
+
+# lncRNA stuff
 allGlnc <- rownames(allGpredEq1[which(allGpredEq1$prediction == 1),])
 pcaSum <- as.data.frame(summary(pca)$importance)
 set.seed(51)
-{meanplot <- ggplot(exprVals, aes_string("PC2", "PC4")) +
-    geom_point(shape=19, alpha=0.3) +
-    geom_point(data = exprVals[which(toupper(rownames(exprVals)) %in% toupper(allGlnc)) ,], 
-               colour="#9fcc2e", size=2, alpha = 0.7) +    
-    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, colour=Treatment), 
+{meanplot <- ggplot(exprVals, aes(x = PC2, y = PC4)) +
+    geom_point(aes(fill = Type), shape=21, color = "None") +
+    scale_fill_manual(values = c( "gray", "coral3", "chartreuse4")) +
+    #     geom_point(data = exprVals[which(toupper(rownames(exprVals)) %in% toupper(allGlnc)) ,], 
+    #                colour="#9fcc2e", size=2, alpha = 0.7) +    
+    #     geom_point(data = exprValsGS, aes(x = PC2, y = PC4, group = class), color = c("red", "blue"), size = 2, alpha = 0.7) +
+    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, color=Treatment), 
                  arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
-    #     plot.points(points, exprVals) +
-    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], colour="#2851b5", size=2) +
-    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10004656m.g" ,], aes(PC2,PC4, label = "SDI1"), nudge_y = 0.07) +
-    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], colour="#2851b5", size=2) +
-    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10015137m.g" ,], aes(PC2,PC4, label = "IPS2"), nudge_y = 0.07) +
-    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10018244m.g" ,], colour="#2851b5", size=2) +
-    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10018244m.g" ,], aes(PC2,PC4, label = "SULTR1;2"), nudge_y = 0.07) +
-    #     geom_point(data = exprVals[rownames(exprVals) == "Thhalv10005068m.g" ,], colour="#2851b5", size=2) +
-    #     geom_shadowtext(data = exprVals[rownames(exprVals) == "Thhalv10005068m.g" ,], aes(PC2,PC4, label = "Rhodanese"), nudge_y = 0.07) +
-  scale_colour_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
+  scale_color_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
+    geom_label_repel(data = exprVals[which(abs(exprVals$PC2) >= 0.1 | abs(exprVals$PC4) >= 0.1),], aes(label = gene_name, fill = Type), segment.alpha = 0.7, color = "white", alpha = 0.8, segment.color = "black") +
     xlab(paste0("PC2 ", pcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ",pcaSum$PC4[2]*100,"%")) +
-    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1.5,1.5))+
+    coord_cartesian(xlim=c(-2,2), ylim=c(-1.5,1.5))+
 theme(axis.title=element_text(size=15), legend.text=element_text(size=12),
 axis.text=element_text(size=12))
 meanplot}
-median
 # ggsave("PSMean.pdf", mean, dpi = 250, height = 6, width = 8)
 # ggsave("~/R/Eutrema/PS/pics/PSMeanPred.pdf", mean, dpi = 250, height = 6, width = 8)
-ggsave("~/R/Eutrema/PS/pics/PSMeanPred.pdf", meanplot, dpi = 450, height = 4, width = 5) 
+ggsave("~/R/Eutrema/PS/pics/PSMeanPC24GSLSassim.pdf", meanplot, dpi = 150, height = 10, width = 12)  # 
 # anti aliasing of Cairo type image raster
 # ggsave("~/R/Eutrema/PS/pics/PSMeanPred.png", meanplot, dpi = 450, height = 4, width = 5, type="cairo") 
-write.xlsx(p2n4, file = "meantopPCA_loadings.xlsx", sheetName = "Pos2Neg4", append = F)
-write.xlsx(p2p4, file = "meantopPCA_loadings.xlsx", sheetName = "Pos2Pos4", append = T)
-write.xlsx(n2p4, file = "meantopPCA_loadings.xlsx", sheetName = "Neg2Pos4", append = T)
-write.xlsx(n2n4, file = "meantopPCA_loadings.xlsx", sheetName = "Neg2Neg4", append = T)
+# write.xlsx(p2n4, file = "meantopPCA_loadings.xlsx", sheetName = "Pos2Neg4", append = F)
+# write.xlsx(p2p4, file = "meantopPCA_loadings.xlsx", sheetName = "Pos2Pos4", append = T)
+# write.xlsx(n2p4, file = "meantopPCA_loadings.xlsx", sheetName = "Neg2Pos4", append = T)
+# write.xlsx(n2n4, file = "meantopPCA_loadings.xlsx", sheetName = "Neg2Neg4", append = T)
 
+# looking at the lipid metabolism genes in the PS libraries?
+# grep for MGD DGD SQD and acyl-transferase
+lipidGenes <- read.csv("~/R/Eutrema/PS/lipids.csv", header = F)
+colnames(lipidGenes) <- c("Eutr", "transcript_id", "scaffold", "begin", "end", "strand", 
+                          "AraT", "name","class","family")
+
+lipidGenes$Ara <- gsub("\\.[0-9]*", "", lipidGenes$AraT)
+exprVals <- merge(exprVals, lipidGenes[,c(1,8:10)], by.x = "Row.names", by.y = "Eutr", all.x = T)
+
+exprVals <- exprVals[rev(order(exprVals$family)),]
+{meanplot <- ggplot(exprVals, aes(x = PC2, y = PC4)) +
+    geom_point(aes(fill = family), shape=21, color = "None") +
+    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, color=Treatment), 
+                 arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
+  scale_color_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
+    geom_label_repel(data = exprVals[which(abs(exprVals$PC2) >= 0.1 | abs(exprVals$PC4) >= 0.1),], aes(label =name, fill = family), segment.alpha = 0.7, color = "white", alpha = 0.8, segment.color = "black") +
+    xlab(paste0("PC2 ", pcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ",pcaSum$PC4[2]*100,"%")) +
+    coord_cartesian(xlim=c(-2,2), ylim=c(-1.5,1.5))+
+theme(axis.title=element_text(size=15), legend.text=element_text(size=12),
+axis.text=element_text(size=12))
+meanplot}
+("~/R/Eutrema/PS/pics/PSMeanPC24lipids.pdf", meanplot, dpi = 150, height = 12, width = 14)  # 
+
+theGenes <- read.table("~/R/Eutrema/PS/Genes", sep = "\t")
+colnames(theGenes) <- c("family", "name", "gene_id", "Function")
+
+exprPlusGenes <- merge(exprVals, theGenes, by.x = "Row.names", by.y = "gene_id", all.x = T)
+exprPlusGenes <- exprPlusGenes[rev(order(exprPlusGenes$family.y)),]
+{
+    meanplot <- ggplot(exprPlusGenes, aes(x = PC2, y = PC4)) +
+    geom_point(aes(fill = Function.y), shape=21, color = "None") +
+    geom_segment(data=coords, aes(x=X, y=Y, xend=PC2, yend=PC4, color=Treatment), 
+                 arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
+  scale_color_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
+  geom_label_repel(data = exprPlusGenes[which(abs(exprPlusGenes$PC2) >= 0.05 | abs(exprPlusGenes$PC4) >= 0.05),], aes(label = name.y, fill = Function.y), segment.alpha = 0.7, color = "white", alpha = 0.8, segment.color = "black") +
+  xlab(paste0("PC2 ", pcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ",pcaSum$PC4[2]*100,"%")) +
+    coord_cartesian(xlim=c(-2,2), ylim=c(-1.5,1.5))+
+theme(axis.title=element_text(size=15), legend.text=element_text(size=12),
+axis.text=element_text(size=12))
+meanplot}
+ggsave("~/R/Eutrema/PS/pics/PSMeanPC24phossulf.pdf", meanplot, dpi = 150, height = 12, width = 14)
 ###################################################
 lncRNA tree
 
@@ -1199,3 +695,188 @@ lncps <- lncps[lncps$padj <=0.05,]
 lncPs <- lncPs[which(toupper(rownames(lncPs)) %in% toupper(allGlnc)),]
 
 lncDEG <- list(lncPs=lncPs, lncpS=lncpS, lncps=lncps)
+
+#################################################################################
+# arcsinh transformation
+
+# results <- results(dds)
+countsNorm <- counts(dds, normalized = T)
+colnames(countsNorm)  <- sampNames
+countasinh <- asinh(countsNorm)
+pcaall <- prcomp(countasinh, center  = T, scale = T)
+
+aexprVals <- data.frame(pcaall$x)
+asampleVals  <-  data.frame(pcaall$rotation)
+
+singleTreatment <- paste0(rep(c("ps", "pS", "Ps", "PS"), each = 3), 1:3)
+singleTreatment <- factor(singleTreatment, levels = singleTreatment)
+apcaSum <- as.data.frame(summary(pcaall)$importance)
+acoords <- data.frame(asampleVals, Treatment = singleTreatment, X=rep(0,12), Y=rep(0,12))
+
+
+# combining the biological replicates
+aps <- countasinh[,1:3]
+aPs <- countasinh[,4:6]
+apS <- countasinh[,7:9]
+aPS <- countasinh[,10:12]
+
+apS <- (pS=rowMeans(apS))
+aPs <- (Ps=rowMeans(aPs))
+aps <- (ps=rowMeans(aps))
+aPS <- (PS=rowMeans(aPS))
+
+ps_mean <- cbind(aps, apS, aPs, aPS)
+
+library(grid)
+library(gridExtra)
+library(cowplot)
+pcaCount <- prcomp(ps_mean, center=TRUE, scale=TRUE)  # PCA with centering and scaling
+countRot <- data.frame(pcaCount$rotation)  # The loadings are here
+plotlists <- {
+PCplots <- list()
+count <- 1
+for (a in 1:4) {
+    for (b in 1:4) {
+        if (a < b) {
+            plots <- ggplot(aexprVals, aes_string(paste0("PC",a), paste0("PC", b))) +
+    	    geom_point(shape=19, color = "black", alpha = 0.2, fill = "None") +
+            geom_segment(data=acoords, aes_string(x="X", y="Y", xend=paste0("PC",a), yend=paste0("PC", b), color="Treatment"), 
+                         arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
+            scale_color_manual(values=rep(c( "#febfcb", "gold", "#f91301", "#fd8a19" ), each=3), name = "") +
+  #   geom_label_repel(data = aexprVals[which(abs(aexprVals$PC3) >= 0.1 | abs(aexprVals$PC4) >= 0.1),], aes(label =name, fill = family), segment.alpha = 0.7, color = "white", alpha = 0.8, segment.color = "black") +
+            labs(title = paste0("PC", a, " vs. PC", b)) +
+            xlab(paste0("PC", a, " ", apcaSum[2,a]*100,"%")) + 
+            ylab(paste0("PC", b, " ", apcaSum[2,b]*100,"%")) +
+            coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1,1)) +
+            theme(axis.title=element_text(size=15), legend.text=element_text(size=12),
+                  axis.text=element_text(size=12)) +
+	    theme_bw()
+            PCplots[[count]] <- plots
+            count <- count + 1
+
+        }
+    }
+}
+}
+
+plotted <- plot_grid(plotlist = PCplots,  ncol = 3, align =  "v")
+plotted
+ggsave("pics/arcsinhPCmeanComparison.pdf", plotted, dpi = 250, height = 14, width = 22)
+
+
+screeplot(pcaCount)
+#log.expr <- log2(expr+1)
+
+plot(pcaCount, type = "l")
+summary(pcaCount)
+screeplot(pcaCount)
+cexprVals<-data.frame(pcaCount$x)
+csampleVals<-data.frame(pcaCount$rotation)
+cpcaSum <- as.data.frame(summary(pcaCount)$importance)
+treat <- c("ps", "pS", "Ps", "PS")
+# singeTreatment <- factor(singeTreatment, levels = singeTreatment)
+ccoords <- data.frame(X=rep(0,4), Y=rep(0,4), csampleVals, Treatment=treat)
+
+cexprVals <- merge(cexprVals, lipidGenes[,c(1,8:10)], by.x = 0, by.y = "Eutr", all.x = T)
+
+cexprVals <- cexprVals[rev(order(cexprVals$family)),]
+{meanplot <- ggplot(cexprVals, aes(x = PC2, y = PC4)) +
+    geom_point(aes(fill = family), shape=21, color = "None") +
+    geom_segment(data=ccoords, aes(x=X, y=Y, xend=PC2, yend=PC4, color=Treatment), 
+                 arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
+  scale_color_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
+  geom_label_repel(data = cexprVals[which(abs(cexprVals$PC2) >= 0.1 | abs(cexprVals$PC4) >= 0.1),], aes(label =name, fill = family), segment.alpha = 0.7, color = "white", alpha = 0.8, segment.color = "black") +
+    xlab(paste0("PC2 ", cpcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ",cpcaSum$PC4[2]*100,"%")) +
+    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1,1))+
+theme(axis.title=element_text(size=15), legend.text=element_text(size=12),
+axis.text=element_text(size=12))
+meanplot}
+ggsave("~/R/Eutrema/PS/pics/asinhPSMeanPC24lipids.pdf", meanplot, dpi = 150, height = 12, width = 14)  # 
+
+
+exprGS <- cexprVals
+exprGS$Type <- ifelse(exprGS$Row.names %in% GSL$Eutr, "GSL", ifelse(exprGS$Row.names %in% Sassim$Eutr, "S assimilation", "other"))
+exprGS$Type <- factor(exprGS$Type, levels = c("other", "GSL", "S assimilation"))
+rbindGS <- rbind(GSL, Sassim)
+exprGS <- merge(exprGS, rbindGS, all.x = T, by.x = "Row.names", by.y = "Eutr")
+# rownames(exprGS) <- exprGS$Row.names
+
+exprGS <- exprGS[order(exprGS$Type),]
+
+# lncRNA stuff
+{meanplot <- ggplot(exprGS, aes(x = PC2, y = PC4)) +
+    geom_point(aes(fill = Type), shape=21, color = "None") +
+    scale_fill_manual(values = c( "gray", "coral3", "chartreuse4")) +
+    geom_segment(data=ccoords, aes(x=X, y=Y, xend=PC2, yend=PC4, color=Treatment), 
+                 arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
+  scale_color_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
+    geom_label_repel(data = exprGS[which(abs(exprGS$PC2) >= 0.1 | abs(exprGS$PC4) >= 0.1),], aes(label = gene_name, fill = Type), segment.alpha = 0.7, color = "white", alpha = 0.8, segment.color = "black") +
+    xlab(paste0("PC2 ", cpcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ", cpcaSum$PC4[2]*100,"%")) +
+    #     scale_fill_manual(values = c( "gray", "coral3", "chartreuse4")) +
+    coord_cartesian(xlim=c(-1.5,1.5), ylim=c(-1,1))+
+theme(axis.title=element_text(size=15), legend.text=element_text(size=12),
+axis.text=element_text(size=12))
+meanplot}
+
+ggsave("~/R/Eutrema/PS/pics/asinhPSMeanPC24GSL.pdf", meanplot, dpi = 150, height = 12, width = 14)  # 
+
+theGenes <- read.table("~/R/Eutrema/PS/Genes", sep = "\t")
+colnames(theGenes) <- c("family", "name", "gene_id", "Function")
+
+cexprPlusGenes <- merge(cexprVals, theGenes, by.x = "Row.names", by.y = "gene_id", all.x = T)
+cexprPlusGenes <- cexprPlusGenes[rev(order(cexprPlusGenes$family.y)),]
+{
+    meanplot <- ggplot(cexprPlusGenes, aes(x = PC2, y = PC4)) +
+    geom_point(aes(fill = Function), shape=21, color = "None") +
+    geom_segment(data=ccoords, aes(x=X, y=Y, xend=PC2, yend=PC4, color=Treatment), 
+                 arrow=arrow(length = unit(0.3, "cm"), angle = 45), size = 1.5) +
+  scale_color_manual(values=c( "#febfcb", "gold", "#f91301", "#fd8a19" ), name = "") +
+  geom_label_repel(data = cexprPlusGenes[which(abs(cexprPlusGenes$PC2) >= 0.05 | abs(cexprPlusGenes$PC4) >= 0.05),], aes(label = name.y, fill = Function), segment.alpha = 0.7, color = "white", alpha = 0.8, segment.color = "black") +
+  xlab(paste0("PC2 ", pcaSum$PC2[2]*100,"%")) + ylab(paste0("PC4 ",pcaSum$PC4[2]*100,"%")) +
+    coord_cartesian(xlim=c(-2,2), ylim=c(-1.5,1.5))+
+theme(axis.title=element_text(size=15), legend.text=element_text(size=12),
+axis.text=element_text(size=12))
+meanplot}
+ggsave("~/R/Eutrema/PS/pics/asinhPSMeanPC24phossulf.pdf", meanplot, dpi = 150, height = 12, width = 14)
+
+cps <- (cps=rowMeans(countsNorm[,1:3]))
+cPs <- (cPs=rowMeans(countsNorm[,4:6]))
+cpS <- (cpS=rowMeans(countsNorm[,7:9]))
+cPS <- (cPS=rowMeans(countsNorm[,10:12]))
+
+cps <- sort(cps)
+cPs <- sort(cPs)
+cpS <- sort(cpS)
+cPS <- sort(cPS)
+ps <- sort(ps)
+Ps <- sort(Ps)
+pS <- sort(pS)
+PS <- sort(PS)
+aps <- sort(aps)
+aPs <- sort(aPs)
+apS <- sort(apS)
+aPS <- sort(aPS)
+
+expData <- data.frame(x=1:length(PS),ps=ps, Ps=Ps, pS=pS, PS=PS)
+aexpData <- data.frame(x=1:length(aPS), aps=aps, aPs=aPs, apS=apS, aPS=aPS)
+cexpData <- data.frame(x=1:length(cPS), cps=cps, cPs=cPs, cpS=cpS, cPS=cPS)
+
+library(reshape2)
+expMelt <- melt(expData, id.vars = "x")
+aexpMelt <- melt(aexpData, id.vars = "x")
+cexpMelt <- melt(cexpData, id.vars = "x")
+{Tnorm <- cexpMelt %>% ggplot(., aes(x = x, y = value, group = variable, color = variable)) + 
+    geom_line() + theme_bw() +
+    labs(x = "sort order", y = "Normalized read counts", title = "Normalization")
+}
+{Tfpkm <- expMelt %>% ggplot(., aes(x = x, y = value, group = variable, color = variable)) + 
+    geom_line() + theme_bw() +
+    labs(x = "sort order", y = "log2(fpkm + 1)", title = "Logarithmic FPKM")
+}
+{Tasin <- aexpMelt %>% ggplot(., aes(x = x, y = value, group = variable, color = variable)) + 
+    geom_line() + theme_bw() +
+    labs(x = "sort order", y = "asinh(CountNorm)", title = "Hyperbolic arcsine")
+}
+transformPlots <- plot_grid(plotlist = list(Tnorm, Tfpkm, Tasin), nrow = 1, align = "h")
+ggsave("~/R/Eutrema/PS/pics/transformPlots.pdf", transformPlots, dpi = 250, height = 5, width = 18)
+

@@ -41,9 +41,10 @@ plot(sft$fitIndices[,1], sft$fitIndices[,5],
      ylab = "Mean Connectivity", type = "n",
      main = paste("Mean Connectivity"))
 text(sft$fitIndices[,1], sft$fitIndices[,5], labels = powers, cex = cex1, col = "red")
+# pick threshold, where the red line meets
 
 # making the co-expression network
-network <- blockwiseModules(fpkm, power = 13,
+network <- blockwiseModules(fpkm, power = 8,
                        TOMType = "none",
                        networkType = "signed hybrid",
                        randomSeed = 319, corType = "pearson", 
@@ -116,7 +117,9 @@ ylab="eigengene expression",xlab="array sample")
 geneClusters <- network$colors
 genenames <- rownames(fpkm.raw)
 names(clustcolours) <- genenames
-
+# how many genes are in each colour group
+table(clustcolours)
+tbl[order(-as.numeric(names(tbl)))]
 #plotting
 library(gplots)
 library(RColorBrewer)
